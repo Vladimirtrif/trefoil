@@ -1,0 +1,20 @@
+(executable
+ (name trefoil2)
+ (libraries trefoil2lib)
+ (modules trefoil2))
+
+(library
+ (name trefoil2lib)
+ (modules errors ast pst pstparser interpreter ast_types)
+ (preprocess (pps ppx_deriving.show)))
+
+(library
+ (name trefoil2test)
+ (modules trefoil2test)
+ (libraries trefoil2lib)
+ (inline_tests)
+ (preprocess (pps ppx_inline_test)))
+
+(env
+  (dev
+    (flags (:standard -warn-error -A))))
