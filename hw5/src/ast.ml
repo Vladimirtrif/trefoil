@@ -11,6 +11,7 @@ let rec expr_of_pst p =
        Failure _ ->
        match sym with
        | "true" -> Bool true
+       | "false" -> Bool false
        (* TODO: add cases for other keywords here *)
        | _ -> Var sym
     end
