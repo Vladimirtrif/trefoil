@@ -43,6 +43,9 @@ let%test "parsing_eq" = Ast.Eq(Int 2, Int 3) = eos "(= 2 3)"
 let%test "parsing_eq_error" = try ignore (eos "(= 2)"); false 
                                with AbstractSyntaxError _ -> true
 
+(* parsing nil test *)
+let%test "parsing_nil" = Ast.Nil = eos "nil"
+
 (* INTERPRET TESTS *)
 (* and here's an interpreter test *)
 let%test "interpret_false" = Ast.Bool false = ie0 (eos "false")
@@ -75,6 +78,9 @@ let%test "interpreting_eq_error1" = try ignore (ie0 (eos "(= 10 false)")); false
 
 let%test "interpreting_eq_error2" = try ignore (ie0 (eos "(= false 5)")); false 
                                      with RuntimeError _ -> true
+
+(* interpret nil test *)
+let%test "interpret_nil" = Ast.Nil = ie0 (eos "nil")
 
 let xto3 = [("x", Ast.Int 3)]
 

@@ -16,6 +16,7 @@ let rec interpret_expression dynenv e =
   match e with
   | Int _ -> e
   | Bool _ -> e
+  | Nil -> e
   | Var x -> begin
       match lookup dynenv x with
       | None -> raise (RuntimeError ("Unbound var " ^ x))

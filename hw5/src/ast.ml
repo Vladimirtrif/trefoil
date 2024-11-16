@@ -12,7 +12,7 @@ let rec expr_of_pst p =
        match sym with
        | "true" -> Bool true
        | "false" -> Bool false
-       (* TODO: add cases for other keywords here *)
+       | "nil" -> Nil
        | _ -> Var sym
     end
   | Pst.Node [] -> raise (AbstractSyntaxError "Expected expression but got '()'")
