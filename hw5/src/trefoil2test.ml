@@ -46,11 +46,16 @@ let%test "parsing_eq_error" = try ignore (eos "(= 2)"); false
 (* parsing nil test *)
 let%test "parsing_nil" = Ast.Nil = eos "nil"
 
+(* parsing cons tests. *)
+let%test "parsing_cons" = Ast.Cons(Int 2, Bool false) = eos "(cons 2 false)"
+let%test "parsing_cons_error" = try ignore (eos "(cons 2)"); false 
+                               with AbstractSyntaxError _ -> true
+
 (* INTERPRET TESTS *)
 (* and here's an interpreter test *)
 let%test "interpret_false" = Ast.Bool false = ie0 (eos "false")
 
-(* interpreting sub tests *)
+(* interpret sub tests *)
 let%test "interpreting_sub1" = Ast.Int (5) = ie0 (eos "(- 10 5)")
 
 let%test "interpreting_sub_error1" = try ignore (ie0 (eos "(- 10 false)")); false 
@@ -59,7 +64,7 @@ let%test "interpreting_sub_error1" = try ignore (ie0 (eos "(- 10 false)")); fals
 let%test "interpreting_sub_error2" = try ignore (ie0 (eos "(- false 5)")); false 
                                      with RuntimeError _ -> true
 
-(* interpreting mul tests *)
+(* interpret mul tests *)
 let%test "interpreting_mul" = Ast.Int (20) = ie0 (eos "(* 4 5)")
 
 let%test "interpreting_mul_error1" = try ignore (ie0 (eos "(* 10 false)")); false 
@@ -68,7 +73,7 @@ let%test "interpreting_mul_error1" = try ignore (ie0 (eos "(* 10 false)")); fals
 let%test "interpreting_mul_error2" = try ignore (ie0 (eos "(* false 5)")); false 
                                      with RuntimeError _ -> true
 
-(* interpreting equals tests *)
+(* interpret equals tests *)
 let%test "interpreting_eq1" = Ast.Bool true = ie0 (eos "(= 21 21)")
 
 let%test "interpreting_eq2" = Ast.Bool false = ie0 (eos "(= 4 5)")
@@ -78,6 +83,11 @@ let%test "interpreting_eq_error1" = try ignore (ie0 (eos "(= 10 false)")); false
 
 let%test "interpreting_eq_error2" = try ignore (ie0 (eos "(= false 5)")); false 
                                      with RuntimeError _ -> true
+
+(* interpret cons tests *)
+let%test "interpreting_cons1" = Ast.Cons (Ast.Int 1, Ast.Bool false) = ie0 (eos "(cons 1 false)")
+
+let%test "interpreting_eq2" = Ast.Cons (Ast.Int 4, Ast.Int 5)  = ie0 (eos "(cons (+ 2 2) 5)")
 
 (* interpret nil test *)
 let%test "interpret_nil" = Ast.Nil = ie0 (eos "nil")
