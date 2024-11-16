@@ -47,6 +47,11 @@ let rec interpret_expression dynenv e =
       | v1, _ -> raise (RuntimeError ("Mul applied to non-integer " ^ string_of_expr v1))
     end
   | Cons (e1, e2) -> let v1, v2 = interpret_expression dynenv e1, interpret_expression dynenv e2 in Cons(v1, v2)
+  | If (branch, thn, els) -> begin 
+      match interpret_expression dynenv branch with
+      | Bool false -> interpret_expression dynenv els
+      | _ -> interpret_expression dynenv thn
+      end
   (* TODO: add cases for other expressions here *)
   | _ -> (failwith ("interpret_expression: not implemented " ^ string_of_expr e))
 

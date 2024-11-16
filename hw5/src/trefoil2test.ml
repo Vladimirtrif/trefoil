@@ -21,7 +21,9 @@ let ieab dynenv bindings expr =
 let ieab0 (bindings, expr) = ieab [] bindings expr
 
 let%test _ = Ast.Int 3 = ie0 (eos "3")
+
 let%test _ = Ast.Int (-10) = ie0 (eos "-10")
+
 let%test "interpret_true" = Ast.Bool true = ie0 (eos "true")
 
 (* PARSING TESTS *)
@@ -30,16 +32,19 @@ let%test "parsing_false" = Ast.Bool false = eos "false"
 
 (* parsing sub tests. *)
 let%test "parsing_sub" = Ast.Sub(Int 3, Int 2) = eos "(- 3 2)"
+
 let%test "parsing_sub_error" = try ignore (eos "(- 2)"); false 
                               with AbstractSyntaxError _ -> true 
 
 (* parsing mul tests. *)
 let%test "parsing_mul" = Ast.Mul(Int 3, Int 2) = eos "(* 3 2)"
+
 let%test "parsing_mul_error" = try ignore (eos "(* 2)"); false 
                                with AbstractSyntaxError _ -> true
 
 (* parsing equals tests. *)
 let%test "parsing_eq" = Ast.Eq(Int 2, Int 3) = eos "(= 2 3)"
+
 let%test "parsing_eq_error" = try ignore (eos "(= 2)"); false 
                                with AbstractSyntaxError _ -> true
 
@@ -48,7 +53,14 @@ let%test "parsing_nil" = Ast.Nil = eos "nil"
 
 (* parsing cons tests. *)
 let%test "parsing_cons" = Ast.Cons(Int 2, Bool false) = eos "(cons 2 false)"
+
 let%test "parsing_cons_error" = try ignore (eos "(cons 2)"); false 
+                               with AbstractSyntaxError _ -> true
+
+(* parsing if tests *)
+let%test "parsing_if" = Ast.If(Bool false, Int 2, Int 4) = eos "(if false 2 4)"
+
+let%test "parsing_if_error" = try ignore (eos "(if 2)"); false 
                                with AbstractSyntaxError _ -> true
 
 (* INTERPRET TESTS *)
@@ -56,41 +68,46 @@ let%test "parsing_cons_error" = try ignore (eos "(cons 2)"); false
 let%test "interpret_false" = Ast.Bool false = ie0 (eos "false")
 
 (* interpret sub tests *)
-let%test "interpreting_sub1" = Ast.Int (5) = ie0 (eos "(- 10 5)")
+let%test "interpret_sub1" = Ast.Int (5) = ie0 (eos "(- 10 5)")
 
-let%test "interpreting_sub_error1" = try ignore (ie0 (eos "(- 10 false)")); false 
+let%test "interpret_sub_error1" = try ignore (ie0 (eos "(- 10 false)")); false 
                                      with RuntimeError _ -> true
 
-let%test "interpreting_sub_error2" = try ignore (ie0 (eos "(- false 5)")); false 
+let%test "interpret_sub_error2" = try ignore (ie0 (eos "(- false 5)")); false 
                                      with RuntimeError _ -> true
 
 (* interpret mul tests *)
-let%test "interpreting_mul" = Ast.Int (20) = ie0 (eos "(* 4 5)")
+let%test "interpret_mul" = Ast.Int (20) = ie0 (eos "(* 4 5)")
 
-let%test "interpreting_mul_error1" = try ignore (ie0 (eos "(* 10 false)")); false 
+let%test "interpret_mul_error1" = try ignore (ie0 (eos "(* 10 false)")); false 
                                      with RuntimeError _ -> true
 
-let%test "interpreting_mul_error2" = try ignore (ie0 (eos "(* false 5)")); false 
+let%test "interpret_mul_error2" = try ignore (ie0 (eos "(* false 5)")); false 
                                      with RuntimeError _ -> true
 
 (* interpret equals tests *)
-let%test "interpreting_eq1" = Ast.Bool true = ie0 (eos "(= 21 21)")
+let%test "interpret_eq1" = Ast.Bool true = ie0 (eos "(= 21 21)")
 
-let%test "interpreting_eq2" = Ast.Bool false = ie0 (eos "(= 4 5)")
+let%test "interpret_eq2" = Ast.Bool false = ie0 (eos "(= 4 5)")
 
-let%test "interpreting_eq_error1" = try ignore (ie0 (eos "(= 10 false)")); false 
+let%test "interpret_eq_error1" = try ignore (ie0 (eos "(= 10 false)")); false 
                                      with RuntimeError _ -> true
 
-let%test "interpreting_eq_error2" = try ignore (ie0 (eos "(= false 5)")); false 
+let%test "interpret_eq_error2" = try ignore (ie0 (eos "(= false 5)")); false 
                                      with RuntimeError _ -> true
 
 (* interpret cons tests *)
-let%test "interpreting_cons1" = Ast.Cons (Ast.Int 1, Ast.Bool false) = ie0 (eos "(cons 1 false)")
+let%test "interpret_cons1" = Ast.Cons (Ast.Int 1, Ast.Bool false) = ie0 (eos "(cons 1 false)")
 
-let%test "interpreting_eq2" = Ast.Cons (Ast.Int 4, Ast.Int 5)  = ie0 (eos "(cons (+ 2 2) 5)")
+let%test "interpret_eq2" = Ast.Cons (Ast.Int 4, Ast.Int 5)  = ie0 (eos "(cons (+ 2 2) 5)")
 
 (* interpret nil test *)
 let%test "interpret_nil" = Ast.Nil = ie0 (eos "nil")
+
+(* interpret if tests *)
+let%test "interpret_if1" = Ast.Int 4 = ie0 (eos "(if false 21 4)")
+
+let%test "interpret_if2" = Ast.Int 2 = ie0 (eos "(if 4 2 5)")
 
 let xto3 = [("x", Ast.Int 3)]
 
