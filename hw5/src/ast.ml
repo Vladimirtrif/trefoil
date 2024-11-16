@@ -24,6 +24,10 @@ let rec expr_of_pst p =
      | Pst.Symbol "if", [branch; thn; els] -> If (expr_of_pst branch, expr_of_pst thn, expr_of_pst els)
      | Pst.Symbol "if", _ -> raise (AbstractSyntaxError ("'if' special form expects 3 args but got " ^ Pst.string_of_pst p))
      (* TODO: add cases for other expressions here *)
+     | Pst.Symbol "-", [left; right] -> Sub (expr_of_pst left, expr_of_pst right)
+     | Pst.Symbol "-", _ -> raise (AbstractSyntaxError ("operator - expects 2 args but got " ^ Pst.string_of_pst p))
+     | Pst.Symbol "*", [left; right] -> Mul (expr_of_pst left, expr_of_pst right)
+     | Pst.Symbol "*", _ -> raise (AbstractSyntaxError ("operator * expects 2 args but got " ^ Pst.string_of_pst p))
      | Pst.Symbol f, _ -> raise (AbstractSyntaxError ("Unknown operator " ^ f))
 
 let expr_of_string s =

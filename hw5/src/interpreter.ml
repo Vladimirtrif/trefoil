@@ -27,6 +27,18 @@ let rec interpret_expression dynenv e =
       | Int _, v2 -> raise (RuntimeError ("Add applied to non-integer " ^ string_of_expr v2))
       | v1, _ -> raise (RuntimeError ("Add applied to non-integer " ^ string_of_expr v1))
     end
+    | Sub (e1, e2) -> begin
+      match interpret_expression dynenv e1, interpret_expression dynenv e2 with
+      | Int n1, Int n2 -> Int (n1 - n2)
+      | Int _, v2 -> raise (RuntimeError ("Sub applied to non-integer " ^ string_of_expr v2))
+      | v1, _ -> raise (RuntimeError ("Sub applied to non-integer " ^ string_of_expr v1))
+    end
+    | Mul (e1, e2) -> begin
+      match interpret_expression dynenv e1, interpret_expression dynenv e2 with
+      | Int n1, Int n2 -> Int (n1 * n2)
+      | Int _, v2 -> raise (RuntimeError ("Mul applied to non-integer " ^ string_of_expr v2))
+      | v1, _ -> raise (RuntimeError ("Mul applied to non-integer " ^ string_of_expr v1))
+    end
   (* TODO: add cases for other expressions here *)
   | _ -> (failwith ("interpret_expression: not implemented " ^ string_of_expr e))
 

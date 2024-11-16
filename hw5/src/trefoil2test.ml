@@ -24,11 +24,41 @@ let%test _ = Ast.Int 3 = ie0 (eos "3")
 let%test _ = Ast.Int (-10) = ie0 (eos "-10")
 let%test "interpret_true" = Ast.Bool true = ie0 (eos "true")
 
+(* PARSING TESTS *)
 (* here's a parsing test. *)
 let%test "parsing_false" = Ast.Bool false = eos "false"
 
+(* parsing sub tests. *)
+let%test "parsing_sub" = Ast.Sub(Int 3, Int 2) = eos "(- 3 2)"
+let%test "parsing_sub_error" = try ignore (eos "(- 2)"); false 
+                              with AbstractSyntaxError _ -> true 
+
+(* parsing mul tests. *)
+let%test "parsing_mul" = Ast.Mul(Int 3, Int 2) = eos "(* 3 2)"
+let%test "parsing_mul_error" = try ignore (eos "(* 2)"); false 
+                               with AbstractSyntaxError _ -> true
+
+(* INTERPRET TESTS *)
 (* and here's an interpreter test *)
 let%test "interpret_false" = Ast.Bool false = ie0 (eos "false")
+
+(* interpreting sub tests *)
+let%test "interpreting_sub1" = Ast.Int (5) = ie0 (eos "(- 10 5)")
+
+let%test "interpreting_sub_error1" = try ignore (ie0 (eos "(- 10 false)")); false 
+                                     with RuntimeError _ -> true
+
+let%test "interpreting_sub_error2" = try ignore (ie0 (eos "(- false 5)")); false 
+                                     with RuntimeError _ -> true
+
+(* interpreting mul tests *)
+let%test "interpreting_mul" = Ast.Int (20) = ie0 (eos "(* 4 5)")
+
+let%test "interpreting_mul_error1" = try ignore (ie0 (eos "(* 10 false)")); false 
+                                     with RuntimeError _ -> true
+
+let%test "interpreting_mul_error2" = try ignore (ie0 (eos "(* false 5)")); false 
+                                     with RuntimeError _ -> true
 
 let xto3 = [("x", Ast.Int 3)]
 
@@ -38,6 +68,7 @@ let%test _ =
 (* a test that expects a runtime error *)
 let%test _ = try ignore (ie xto3 (eos "y")); false
              with RuntimeError _ -> true
+
 let%test _ = Ast.Int 3 = ie0 (eos "(+ 1 2)")
 
 (* a test that expects an abstract syntax error *)
