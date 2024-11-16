@@ -28,6 +28,8 @@ let rec expr_of_pst p =
      | Pst.Symbol "-", _ -> raise (AbstractSyntaxError ("operator - expects 2 args but got " ^ Pst.string_of_pst p))
      | Pst.Symbol "*", [left; right] -> Mul (expr_of_pst left, expr_of_pst right)
      | Pst.Symbol "*", _ -> raise (AbstractSyntaxError ("operator * expects 2 args but got " ^ Pst.string_of_pst p))
+     | Pst.Symbol "=", [left; right] -> Eq (expr_of_pst left, expr_of_pst right)
+     | Pst.Symbol "=", _ -> raise (AbstractSyntaxError ("operator = expects 2 args but got " ^ Pst.string_of_pst p))
      | Pst.Symbol f, _ -> raise (AbstractSyntaxError ("Unknown operator " ^ f))
 
 let expr_of_string s =

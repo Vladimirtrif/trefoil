@@ -38,6 +38,11 @@ let%test "parsing_mul" = Ast.Mul(Int 3, Int 2) = eos "(* 3 2)"
 let%test "parsing_mul_error" = try ignore (eos "(* 2)"); false 
                                with AbstractSyntaxError _ -> true
 
+(* parsing equals tests. *)
+let%test "parsing_eq" = Ast.Eq(Int 2, Int 3) = eos "(= 2 3)"
+let%test "parsing_eq_error" = try ignore (eos "(= 2)"); false 
+                               with AbstractSyntaxError _ -> true
+
 (* INTERPRET TESTS *)
 (* and here's an interpreter test *)
 let%test "interpret_false" = Ast.Bool false = ie0 (eos "false")
@@ -58,6 +63,17 @@ let%test "interpreting_mul_error1" = try ignore (ie0 (eos "(* 10 false)")); fals
                                      with RuntimeError _ -> true
 
 let%test "interpreting_mul_error2" = try ignore (ie0 (eos "(* false 5)")); false 
+                                     with RuntimeError _ -> true
+
+(* interpreting equals tests *)
+let%test "interpreting_eq1" = Ast.Bool true = ie0 (eos "(= 21 21)")
+
+let%test "interpreting_eq2" = Ast.Bool false = ie0 (eos "(= 4 5)")
+
+let%test "interpreting_eq_error1" = try ignore (ie0 (eos "(= 10 false)")); false 
+                                     with RuntimeError _ -> true
+
+let%test "interpreting_eq_error2" = try ignore (ie0 (eos "(= false 5)")); false 
                                      with RuntimeError _ -> true
 
 let xto3 = [("x", Ast.Int 3)]
