@@ -126,11 +126,16 @@ let%test "interpret_if1" = Ast.Int 4 = ie0 (eos "(if false 21 4)")
 
 let%test "interpret_if2" = Ast.Int 2 = ie0 (eos "(if 4 2 5)")
 
-(* interpret if tests *)
+(* interpret test binding tests *)
 let%test "interpret_testBinding" = [] = ib [] (bos "(test true)")
 
 let%test "interpret_testBinding_error" = try ignore (ib [] (bos "(test (= 4 5))")); false 
                                          with RuntimeError _ -> true
+
+(* interpret if tests *)
+let%test "interpret_let1" = Ast.Int 4 = ie0 (eos "(let ((x 1)) (+ x 3))")
+
+let%test "interpret_let2" = Ast.Int 2 = ie0 (eos "(let ((y false)) (if y 1 2))")
 
 let xto3 = [("x", Ast.Int 3)]
 
