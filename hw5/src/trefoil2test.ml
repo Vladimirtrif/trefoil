@@ -75,6 +75,11 @@ let%test "parsing_let" = Ast.Let ("x", Int 5, Add (Var "x", Int 5)) = eos "(let 
 let%test "parsing_let_error" = try ignore (eos "(let (x 5) (+ x 5))"); false 
                                    with AbstractSyntaxError _ -> true
 
+(* parsing let tests *)
+let%test "parsing_nil?" = Ast.IsNil (Nil) = eos "(nil? nil)"
+                                   
+let%test "parsing_nil?_error" = try ignore (eos "(nil? 1 2)"); false 
+                                                                      with AbstractSyntaxError _ -> true
 (* INTERPRET TESTS *)
 (* and here's an interpreter test *)
 let%test "interpret_false" = Ast.Bool false = ie0 (eos "false")
@@ -132,10 +137,15 @@ let%test "interpret_testBinding" = [] = ib [] (bos "(test true)")
 let%test "interpret_testBinding_error" = try ignore (ib [] (bos "(test (= 4 5))")); false 
                                          with RuntimeError _ -> true
 
-(* interpret if tests *)
+(* interpret let tests *)
 let%test "interpret_let1" = Ast.Int 4 = ie0 (eos "(let ((x 1)) (+ x 3))")
 
 let%test "interpret_let2" = Ast.Int 2 = ie0 (eos "(let ((y false)) (if y 1 2))")
+
+(* interpret nil? tests *)
+let%test "interpret_nil?1" = Ast.Bool true = ie0 (eos "(nil? nil)")
+
+let%test "interpret_nil?2" = Ast.Bool false = ie0 (eos "(nil? 1)")
 
 let xto3 = [("x", Ast.Int 3)]
 

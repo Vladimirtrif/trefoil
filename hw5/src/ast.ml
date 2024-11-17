@@ -33,6 +33,8 @@ let rec expr_of_pst p =
      | Pst.Symbol "cons", _ -> raise (AbstractSyntaxError ("operator cons expects 2 args but got " ^ Pst.string_of_pst p))
      | Pst.Symbol "let", [Node [Node [Pst.Symbol x; e1]]; e2] -> Let (x, expr_of_pst e1, expr_of_pst e2)
      | Pst.Symbol "let", _ -> raise (AbstractSyntaxError ("operator let expects 2 args with first being of the form '((x, expr))' but got " ^ Pst.string_of_pst p))
+     | Pst.Symbol "nil?", [e] -> IsNil (expr_of_pst e)
+     | Pst.Symbol "nil?", _ -> raise (AbstractSyntaxError ("operator nil? expects 1 arg but got " ^ Pst.string_of_pst p))
      | Pst.Symbol f, _ -> raise (AbstractSyntaxError ("Unknown operator " ^ f))
 
 let expr_of_string s =
