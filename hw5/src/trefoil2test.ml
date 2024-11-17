@@ -64,9 +64,15 @@ let%test "parsing_if_error" = try ignore (eos "(if 2)"); false
                                with AbstractSyntaxError _ -> true
 
 (* parsing test binding tests *)
-  let%test "parsing_testBinding" = Ast.TestBinding(Eq(Int 4, Int 4)) = bos "(test (= 4 4))"
+let%test "parsing_testBinding" = Ast.TestBinding(Eq(Int 4, Int 4)) = bos "(test (= 4 4))"
 
-    let%test "parsing_testBinding_error" = try ignore (bos "(test 1 2)"); false 
+let%test "parsing_testBinding_error" = try ignore (bos "(test 1 2)"); false 
+                                   with AbstractSyntaxError _ -> true
+
+(* parsing let tests *)
+let%test "parsing_let" = Ast.Let ("x", Int 5, Add (Var "x", Int 5)) = eos "(let ((x 5)) (+ x 5))"
+
+let%test "parsing_let_error" = try ignore (eos "(let (x 5) (+ x 5))"); false 
                                    with AbstractSyntaxError _ -> true
 
 (* INTERPRET TESTS *)
@@ -163,11 +169,11 @@ let%test _ =
 
   (* TODO: replace "Ast.Nil" on the next line with the correct AST for the
      expression above by calling your Let constructor. *)
-  let manually_constructed_let = Ast.Nil in
+  let manually_constructed_let = Ast.Let ("x", Int 3, Add (Var "x", Int 1)) in
   parsed_let = manually_constructed_let
 
 (* TODO: test parsing malformed let expressions by filling in the template.*)
-let%test _ = try ignore (eos "TODO: your expression here"); false
+let%test _ = try ignore (eos "(let (x 5))"); false
              with AbstractSyntaxError _ -> true
 
 let%test "test let1" = Ast.Int 4 = ie0 (eos "(let ((x 3)) (+ x 1))")
@@ -182,15 +188,15 @@ let%test _ = Ast.Int 2 = ie0 (eos "(cdr (cons 1 2))")
 let%test _ = Ast.Int 3 = ieab0 (bsos "(define x (+ 1 2))", eos "x")
 
 let%test "test binding parsing" =
-  let parsed_test = bos "TODO: your test binding string here" in
+  let parsed_test = bos "(test 1)" in
 
   (* TODO: replace the right hand side of the equals sign on the next line with
      the correct AST for your test binding above by calling your constructor. *)
-  let manually_constructed_test = Ast.VarBinding("replace", Ast.Var "me") in
+  let manually_constructed_test = Ast.TestBinding (Int 1) in
   parsed_test = manually_constructed_test
 
 let%test "test binding parsing malformed" =
-  try ignore (bos "TODO: your malformed test binding here"); false
+  try ignore (bos "(test 1 2)"); false
   with AbstractSyntaxError _ -> true
 
 (* the "%test_unit" means the test passes unless it throws an exception *)

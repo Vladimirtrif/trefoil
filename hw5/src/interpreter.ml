@@ -52,6 +52,7 @@ let rec interpret_expression dynenv e =
       | Bool false -> interpret_expression dynenv els
       | _ -> interpret_expression dynenv thn
       end
+  | Let(x, e1, e2) -> interpret_expression ((x, interpret_expression dynenv e1) :: dynenv) e2
   (* TODO: add cases for other expressions here *)
   | _ -> (failwith ("interpret_expression: not implemented " ^ string_of_expr e))
 
