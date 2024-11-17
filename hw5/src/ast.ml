@@ -47,7 +47,8 @@ let binding_of_pst p =
      match head, args with
      | Pst.Symbol "define", [Pst.Symbol lhs_var; rhs] -> VarBinding (lhs_var, expr_of_pst rhs)
      | Pst.Symbol "define", _ -> raise (AbstractSyntaxError("This definition is malformed " ^ Pst.string_of_pst p))
-     (* TODO: parse test bindings here *)
+     | Pst.Symbol "test", [e] -> TestBinding (expr_of_pst e)
+     | Pst.Symbol "test", _  -> raise (AbstractSyntaxError("This definition is malformed " ^ Pst.string_of_pst p))
      | Pst.Node _, _ -> raise (AbstractSyntaxError("Expected binding to start with a symbol but got " ^ Pst.string_of_pst p))
      | _ -> TopLevelExpr (expr_of_pst p)
 

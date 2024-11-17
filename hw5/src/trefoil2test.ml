@@ -63,6 +63,12 @@ let%test "parsing_if" = Ast.If(Bool false, Int 2, Int 4) = eos "(if false 2 4)"
 let%test "parsing_if_error" = try ignore (eos "(if 2)"); false 
                                with AbstractSyntaxError _ -> true
 
+(* parsing test binding tests *)
+  let%test "parsing_testBinding" = Ast.TestBinding(Eq(Int 4, Int 4)) = bos "(test (= 4 4))"
+
+    let%test "parsing_testBinding_error" = try ignore (bos "(test 1 2)"); false 
+                                   with AbstractSyntaxError _ -> true
+
 (* INTERPRET TESTS *)
 (* and here's an interpreter test *)
 let%test "interpret_false" = Ast.Bool false = ie0 (eos "false")
@@ -108,6 +114,17 @@ let%test "interpret_nil" = Ast.Nil = ie0 (eos "nil")
 let%test "interpret_if1" = Ast.Int 4 = ie0 (eos "(if false 21 4)")
 
 let%test "interpret_if2" = Ast.Int 2 = ie0 (eos "(if 4 2 5)")
+
+(* interpret if tests *)
+let%test "interpret_if1" = Ast.Int 4 = ie0 (eos "(if false 21 4)")
+
+let%test "interpret_if2" = Ast.Int 2 = ie0 (eos "(if 4 2 5)")
+
+(* interpret if tests *)
+let%test "interpret_testBinding" = [] = ib [] (bos "(test true)")
+
+let%test "interpret_testBinding_error" = try ignore (ib [] (bos "(test (= 4 5))")); false 
+                                         with RuntimeError _ -> true
 
 let xto3 = [("x", Ast.Int 3)]
 

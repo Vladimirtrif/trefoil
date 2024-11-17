@@ -65,7 +65,11 @@ let interpret_binding dynenv b =
      let v = interpret_expression dynenv e in
      print_endline (string_of_expr v);
      dynenv
-  (* TODO: implement test bindings here *)
+  | TestBinding e -> begin 
+    match interpret_expression dynenv e with
+    | Bool true -> dynenv
+    | v -> raise (RuntimeError ("Test doesn't pass, " ^ string_of_expr e ^ " evaluates to " ^ string_of_expr v ^ " not true."))
+  end
 
 (* the semantics of a whole program (sequence of bindings) *)
 let interpret_bindings dynenv bs =
