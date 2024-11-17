@@ -52,6 +52,11 @@ let rec interpret_expression dynenv e =
                               else interpret_expression dynenv thn
   | Let (x, e1, e2) -> interpret_expression ((x, interpret_expression dynenv e1) :: dynenv) e2
   | IsNil e -> Bool (interpret_expression dynenv e = Nil)
+  | IsCons e -> begin 
+      match interpret_expression dynenv e with
+      | Cons _ ->  Bool true
+      | _ ->  Bool false
+    end
   (* TODO: add cases for other expressions here *)
   | _ -> (failwith ("interpret_expression: not implemented " ^ string_of_expr e))
 

@@ -61,25 +61,32 @@ let%test "parsing_cons_error" = try ignore (eos "(cons 2)"); false
 let%test "parsing_if" = Ast.If(Bool false, Int 2, Int 4) = eos "(if false 2 4)"
 
 let%test "parsing_if_error" = try ignore (eos "(if 2)"); false 
-                               with AbstractSyntaxError _ -> true
+                              with AbstractSyntaxError _ -> true
 
 (* parsing test binding tests *)
 let%test "parsing_testBinding" = Ast.TestBinding(Eq(Int 4, Int 4)) = bos "(test (= 4 4))"
 
 let%test "parsing_testBinding_error" = try ignore (bos "(test 1 2)"); false 
-                                   with AbstractSyntaxError _ -> true
+                                       with AbstractSyntaxError _ -> true
 
 (* parsing let tests *)
 let%test "parsing_let" = Ast.Let ("x", Int 5, Add (Var "x", Int 5)) = eos "(let ((x 5)) (+ x 5))"
 
 let%test "parsing_let_error" = try ignore (eos "(let (x 5) (+ x 5))"); false 
-                                   with AbstractSyntaxError _ -> true
+                               with AbstractSyntaxError _ -> true
 
-(* parsing let tests *)
+(* parsing nil? tests *)
 let%test "parsing_nil?" = Ast.IsNil (Nil) = eos "(nil? nil)"
                                    
 let%test "parsing_nil?_error" = try ignore (eos "(nil? 1 2)"); false 
-                                                                      with AbstractSyntaxError _ -> true
+                                with AbstractSyntaxError _ -> true
+
+(* parsing cons? tests *)
+let%test "parsing_cons?" = Ast.IsCons (Cons (Int 1, Int 2)) = eos "(cons? (cons 1 2))"
+                                   
+let%test "parsing_cons?_error" = try ignore (eos "(cons? )"); false 
+                                with AbstractSyntaxError _ -> true
+
 (* INTERPRET TESTS *)
 (* and here's an interpreter test *)
 let%test "interpret_false" = Ast.Bool false = ie0 (eos "false")
@@ -146,6 +153,11 @@ let%test "interpret_let2" = Ast.Int 2 = ie0 (eos "(let ((y false)) (if y 1 2))")
 let%test "interpret_nil?1" = Ast.Bool true = ie0 (eos "(nil? nil)")
 
 let%test "interpret_nil?2" = Ast.Bool false = ie0 (eos "(nil? 1)")
+
+(* interpret cons? tests *)
+let%test "interpret_cons?1" = Ast.Bool true = ie0 (eos "(cons? (cons 1 false))")
+
+let%test "interpret_cons?2" = Ast.Bool false = ie0 (eos "(cons? 1)")
 
 let xto3 = [("x", Ast.Int 3)]
 
