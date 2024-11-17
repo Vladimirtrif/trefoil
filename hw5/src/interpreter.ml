@@ -57,8 +57,16 @@ let rec interpret_expression dynenv e =
       | Cons _ ->  Bool true
       | _ ->  Bool false
     end
-  (* TODO: add cases for other expressions here *)
-  | _ -> (failwith ("interpret_expression: not implemented " ^ string_of_expr e))
+  | Car e -> begin 
+    match interpret_expression dynenv e with
+      | Cons (v1, _) ->  v1
+      | _ ->  raise (RuntimeError ("Car can only be applied to a cons expressions " ^ string_of_expr e))
+  end
+  | Cdr e -> begin 
+    match interpret_expression dynenv e with
+      | Cons (_, v2) ->  v2
+      | _ ->  raise (RuntimeError ("Cdr can only be applied to a cons expressions " ^ string_of_expr e))
+    end
 
 let interpret_binding dynenv b =
   match b with

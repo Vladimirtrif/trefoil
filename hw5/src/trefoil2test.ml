@@ -87,6 +87,18 @@ let%test "parsing_cons?" = Ast.IsCons (Cons (Int 1, Int 2)) = eos "(cons? (cons 
 let%test "parsing_cons?_error" = try ignore (eos "(cons? )"); false 
                                 with AbstractSyntaxError _ -> true
 
+(* parsing car tests *)
+let%test "parsing_car" = Ast.Car (Cons (Mul (Int 1, Int 1), Int 2)) = eos "(car (cons (* 1 1) 2))"
+                                   
+let%test "parsing_car_error" = try ignore (eos "(car 1 2 )"); false 
+                                with AbstractSyntaxError _ -> true
+
+(* parsing cdr tests *)
+let%test "parsing_cdr" = Ast.Cdr (Cons (Mul (Int 1, Int 1), Int 2)) = eos "(cdr (cons (* 1 1) 2))"
+                                   
+let%test "parsing_cdr_error" = try ignore (eos "(cdr)"); false 
+                                with AbstractSyntaxError _ -> true
+
 (* INTERPRET TESTS *)
 (* and here's an interpreter test *)
 let%test "interpret_false" = Ast.Bool false = ie0 (eos "false")
@@ -158,6 +170,18 @@ let%test "interpret_nil?2" = Ast.Bool false = ie0 (eos "(nil? 1)")
 let%test "interpret_cons?1" = Ast.Bool true = ie0 (eos "(cons? (cons 1 false))")
 
 let%test "interpret_cons?2" = Ast.Bool false = ie0 (eos "(cons? 1)")
+
+(* interpret car tests *)
+let%test "interpret_car" = Ast.Int 1 = ie0 (eos "(car (cons (* 1 1) 2))")
+
+let%test "interpret_car_error" = try ignore (ie0 (eos "(car 1)")); false 
+with RuntimeError _ -> true
+
+(* interpret cdr tests *)
+let%test "interpret_cdr" = Ast.Int 2 = ie0 (eos "(cdr (cons (* 1 1) 2))")
+
+let%test "interpret_cdr_error" = try ignore (ie0 (eos "(cdr false)")); false 
+with RuntimeError _ -> true
 
 let xto3 = [("x", Ast.Int 3)]
 

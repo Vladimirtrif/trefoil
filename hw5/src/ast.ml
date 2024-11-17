@@ -37,6 +37,10 @@ let rec expr_of_pst p =
      | Pst.Symbol "nil?", _ -> raise (AbstractSyntaxError ("operator nil? expects 1 arg but got " ^ Pst.string_of_pst p))
      | Pst.Symbol "cons?", [e] -> IsCons (expr_of_pst e)
      | Pst.Symbol "cons?", _ -> raise (AbstractSyntaxError ("operator cons? expects 1 arg but got " ^ Pst.string_of_pst p))
+     | Pst.Symbol "car", [e] -> Car (expr_of_pst e)
+     | Pst.Symbol "car", _ -> raise (AbstractSyntaxError ("operator car expects 1 arg but got " ^ Pst.string_of_pst p))
+     | Pst.Symbol "cdr", [e] -> Cdr (expr_of_pst e)
+     | Pst.Symbol "cdr", _ -> raise (AbstractSyntaxError ("operator cdr expects 1 arg but got " ^ Pst.string_of_pst p))
      | Pst.Symbol f, _ -> raise (AbstractSyntaxError ("Unknown operator " ^ f))
 
 let expr_of_string s =
