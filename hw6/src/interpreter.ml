@@ -23,7 +23,8 @@ let rec interpret_expression dynenv e =
   | Var x -> begin
       match lookup dynenv x with
       | None -> raise (RuntimeError ("Unbound var " ^ x))
-      | Some value -> value
+      | Some (VariableEntry value) -> value
+      | Some (FunctionEntry _) -> raise (RuntimeError ("Expected variable binding but " ^ x ^ " is a function binding"))
     end
   | Add (e1, e2) -> begin
       match interpret_expression dynenv e1, interpret_expression dynenv e2 with
@@ -53,7 +54,7 @@ let rec interpret_expression dynenv e =
   | If (branch, thn, els) -> if interpret_expression dynenv branch = Bool false
                               then interpret_expression dynenv els
                               else interpret_expression dynenv thn
-  | Let (x, e1, e2) -> interpret_expression ((x, interpret_expression dynenv e1) :: dynenv) e2
+  | Let (x, e1, e2) -> interpret_expression ((x, VariableEntry (interpret_expression dynenv e1)) :: dynenv) e2
   | IsNil e -> Bool (interpret_expression dynenv e = Nil)
   | IsCons e -> begin 
       match interpret_expression dynenv e with
