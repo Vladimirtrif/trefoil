@@ -31,16 +31,16 @@ let rec expr_of_pst p =
      | Pst.Symbol "=", _ -> raise (AbstractSyntaxError ("operator = expects 2 args but got " ^ Pst.string_of_pst p))
      | Pst.Symbol "cons", [left; right] -> Cons (expr_of_pst left, expr_of_pst right)
      | Pst.Symbol "cons", _ -> raise (AbstractSyntaxError ("operator cons expects 2 args but got " ^ Pst.string_of_pst p))
-     | Pst.Symbol "let", [Node dl; body] -> Let rec processLetDefList l acc repeatList =
+     | Pst.Symbol "let", [Pst.Node dl; body] -> let rec processLetDefList l acc repeatList =
                                               match l with 
                                               | [] -> acc
-                                              | Node [Pst.Symbol x, e] :: tl -> if List.mem x repeatList = false 
+                                              | (Pst.Node [Pst.Symbol x; e]) :: tl -> if List.mem x repeatList = false 
                                                                                 then processLetDefList tl ((x, expr_of_pst e):: acc) (x :: repeatList)
                                                                                 else raise (AbstractSyntaxError ("Cannot define same variable twice in one let binding " ^ x))
                                               | _ -> raise (AbstractSyntaxError ("Operator let expects 2 args with first being (defs) with defs being a"
                                                                                   ^ " sequence of psts in the form (x, e) where x is an arbitrary symbol and"
                                                                                   ^ " e is an arbitrary expression.  However, got " ^ Pst.string_of_pst p))
-                                           in Let (x, processLetDefList dl [] [], expr_of_pst body)
+                                           in Let (processLetDefList dl [] [], expr_of_pst body)
      | Pst.Symbol "let", _ -> raise (AbstractSyntaxError ("operator let expects 2 args with first being of the form '((x, expr))' but got " ^ Pst.string_of_pst p))
      | Pst.Symbol "nil?", [e] -> IsNil (expr_of_pst e)
      | Pst.Symbol "nil?", _ -> raise (AbstractSyntaxError ("operator nil? expects 1 arg but got " ^ Pst.string_of_pst p))

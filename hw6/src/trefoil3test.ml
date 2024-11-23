@@ -24,6 +24,33 @@ include Interpreter_types
 
 (* HW6 TESTS, see Line 90 for HW5 Tests *)
 
+(* Parsing Tests*)
+
+(* parsing let tests *)
+let%test "parsing_let0" = Ast.Let ([], Add (Int 1, Int 2)) = eos "(let () (+ 1 2))"
+
+let%test "parsing_let1" = Ast.Let ([("tst", Bool false)], Var "tst") = eos "(let ((tst false)) tst)"
+
+(* Note reversed order. Don't reverse list because it is not necessary so not doing it is more performant *)
+let%test "parsing_let2" = Ast.Let ([("y", Int 4); ("x", Int 5)], Add (Var "x", Var "y")) = eos "(let ((x 5) (y 4)) (+ x y))"
+
+let%test "parsing_let_syntaxError" = try ignore (eos "(let (x 5) (+ x 5))"); false 
+                                      with AbstractSyntaxError _ -> true
+
+let%test "parsing_let_sameVarError" = try ignore (eos "(let ((x 5) (x 4)) (+ x 5))"); false 
+                                      with AbstractSyntaxError _ -> true
+
+(* Iterpret Tests *)
+
+(* interpret let tests *)
+let%test "interpret_let1" = Ast.Int 13 = ie0 (eos "(let () (+ 10 3))")
+
+let%test "interpret_let2" = Ast.Int 6 = ie0 (eos "(let ((x 4)) (- 10 x))")
+
+let%test "interpret_let3" = Ast.Int 20 = ie0 (eos "(let ((x 5) (y 15)) (+ y x))")
+
+(* Provided Tests *)
+
 let%test "multi var let" = Ast.Int 7 = ie0 (eos "(let ((x 3) (y 4)) (+ x y))")
 let%test "no var let" = Ast.Int 0 = ie0 (eos "(let () 0)")
 let%test "let swap" = Ast.Int 1 = ie0 (eos "(let ((x 3) (y 4)) (let ((x y) (y x)) (- x y)))")
@@ -77,8 +104,6 @@ let sum_binding =
 let%test "sum_countdown" =
   Ast.Int 55 = ieab0 (bsos (countdown_binding ^ sum_binding),
                          eos "(sum (countdown 10))")
-
-
 
 let sum_cond_binding =
   "(define (sum l)
@@ -139,12 +164,6 @@ let%test "parsing_testBinding" = Ast.TestBinding(Eq(Int 4, Int 4)) = bos "(test 
 
 let%test "parsing_testBinding_error" = try ignore (bos "(test 1 2)"); false 
                                        with AbstractSyntaxError _ -> true
-
-(* parsing let tests *)
-let%test "parsing_let" = Ast.Let ("x", Int 5, Add (Var "x", Int 5)) = eos "(let ((x 5)) (+ x 5))"
-
-let%test "parsing_let_error" = try ignore (eos "(let (x 5) (+ x 5))"); false 
-                               with AbstractSyntaxError _ -> true
 
 (* parsing nil? tests *)
 let%test "parsing_nil?" = Ast.IsNil (Nil) = eos "(nil? nil)"
@@ -227,11 +246,6 @@ let%test "interpret_testBinding" = [] = ib [] (bos "(test true)")
 let%test "interpret_testBinding_error" = try ignore (ib [] (bos "(test (= 4 5))")); false 
                                          with RuntimeError _ -> true
 
-(* interpret let tests *)
-let%test "interpret_let1" = Ast.Int 4 = ie0 (eos "(let ((x 1)) (+ x 3))")
-
-let%test "interpret_let2" = Ast.Int 2 = ie0 (eos "(let ((y false)) (if y 1 2))")
-
 (* interpret nil? tests *)
 let%test "interpret_nil?1" = Ast.Bool true = ie0 (eos "(nil? nil)")
 
@@ -291,7 +305,7 @@ let%test _ =
 
   (* TODO: replace "Ast.Nil" on the next line with the correct AST for the
      expression above by calling your Let constructor. *)
-  let manually_constructed_let = Ast.Let ("x", Int 3, Add (Var "x", Int 1)) in
+  let manually_constructed_let = Ast.Let ([("x", Int 3)], Add (Var "x", Int 1)) in
   parsed_let = manually_constructed_let
 
 (* TODO: test parsing malformed let expressions by filling in the template.*)

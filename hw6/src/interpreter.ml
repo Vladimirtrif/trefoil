@@ -55,7 +55,7 @@ let rec interpret_expression dynenv e =
   | Let (dl, body) -> let rec makeNewEnv l acc =
                       match l with
                       | [] -> acc
-                      | (x, e) :: tl -> (x, VariableEntry (interpret_expression dynenv e)) :: acc
+                      | (x, e) :: tl -> makeNewEnv tl ((x, VariableEntry (interpret_expression dynenv e)) :: acc)
                     in interpret_expression (makeNewEnv dl dynenv) body
   | IsNil e -> Bool (interpret_expression dynenv e = Nil)
   | IsCons e -> begin 
