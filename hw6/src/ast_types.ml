@@ -7,8 +7,7 @@ type expr =
   | Mul of expr * expr
   | Eq of expr * expr
   | If of expr * expr * expr
-  (*| Let of (string * expr) list * expr*)
-  | Let of string * expr * expr
+  | Let of (string * expr) list * expr
   | Nil
   | Cons of expr * expr
   | IsNil of expr

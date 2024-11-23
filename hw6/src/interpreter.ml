@@ -52,7 +52,11 @@ let rec interpret_expression dynenv e =
   | If (branch, thn, els) -> if interpret_expression dynenv branch = Bool false
                               then interpret_expression dynenv els
                               else interpret_expression dynenv thn
-  | Let (x, e1, e2) -> interpret_expression ((x, VariableEntry (interpret_expression dynenv e1)) :: dynenv) e2
+  | Let (dl, body) -> let rec makeNewEnv l acc =
+                      match l with
+                      | [] -> acc
+                      | (x, e) :: tl -> (x, VariableEntry (interpret_expression dynenv e)) :: acc
+                    in interpret_expression (makeNewEnv dl dynenv) body
   | IsNil e -> Bool (interpret_expression dynenv e = Nil)
   | IsCons e -> begin 
       match interpret_expression dynenv e with

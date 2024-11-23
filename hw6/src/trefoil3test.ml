@@ -24,7 +24,7 @@ include Interpreter_types
 
 (* HW6 TESTS, see Line 90 for HW5 Tests *)
 
-(*let%test "multi var let" = Ast.Int 7 = ie0 (eos "(let ((x 3) (y 4)) (+ x y))")
+let%test "multi var let" = Ast.Int 7 = ie0 (eos "(let ((x 3) (y 4)) (+ x y))")
 let%test "no var let" = Ast.Int 0 = ie0 (eos "(let () 0)")
 let%test "let swap" = Ast.Int 1 = ie0 (eos "(let ((x 3) (y 4)) (let ((x y) (y x)) (- x y)))")
 
@@ -87,7 +87,7 @@ let sum_cond_binding =
         (true (+ (car l) (sum (cdr l))))))"
 let%test "sum cond" =
   let program = countdown_binding ^ sum_cond_binding in
-  Ast.Int 55 = ieab0 (bsos program, eos "(sum (countdown 10))") *)
+  Ast.Int 55 = ieab0 (bsos program, eos "(sum (countdown 10))")
 
 (* HW5 TESTS *)
 
