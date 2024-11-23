@@ -73,6 +73,13 @@ let rec interpret_expression dynenv e =
       | Cons (_, v2) ->  v2
       | _ ->  raise (RuntimeError ("Cdr can only be applied to a cons expressions " ^ string_of_expr e))
     end
+  | Cond cl -> let rec condHelper l =
+                match l with
+                | [] -> raise (RuntimeError ("Cond must have a clause that doesn't evaluate to false " ^ string_of_expr e))
+                | (pi, bi) :: tl -> if interpret_expression dynenv pi = Bool false
+                                    then condHelper tl 
+                                    else interpret_expression dynenv bi
+               in condHelper cl
 
 let interpret_binding dynenv b =
   match b with

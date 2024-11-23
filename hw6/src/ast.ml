@@ -33,7 +33,7 @@ let rec expr_of_pst p =
      | Pst.Symbol "cons", _ -> raise (AbstractSyntaxError ("operator cons expects 2 args but got " ^ Pst.string_of_pst p))
      | Pst.Symbol "let", [Pst.Node dl; body] -> let rec processLetDefList l acc repeatList =
                                               match l with 
-                                              | [] -> acc
+                                              | [] -> acc (* don't reverse acc list since order doesn't matter for let expressions*)
                                               | (Pst.Node [Pst.Symbol x; e]) :: tl -> if List.mem x repeatList = false 
                                                                                 then processLetDefList tl ((x, expr_of_pst e):: acc) (x :: repeatList)
                                                                                 else raise (AbstractSyntaxError ("Cannot define same variable twice in one let binding " ^ x))
@@ -50,6 +50,12 @@ let rec expr_of_pst p =
      | Pst.Symbol "car", _ -> raise (AbstractSyntaxError ("operator car expects 1 arg but got " ^ Pst.string_of_pst p))
      | Pst.Symbol "cdr", [e] -> Cdr (expr_of_pst e)
      | Pst.Symbol "cdr", _ -> raise (AbstractSyntaxError ("operator cdr expects 1 arg but got " ^ Pst.string_of_pst p))
+     | Pst.Symbol "cond", cl -> let rec parseClauseList l acc =
+                                  match l with
+                                  | [] -> List.rev acc (* reverse since clause order matters *)
+                                  | (Pst.Node [e1; e2]) :: tl -> parseClauseList tl ((expr_of_pst e1, expr_of_pst e2):: acc)
+                                  | _ -> raise (AbstractSyntaxError ("operator cond expects arguements of the form (e1 e2) but got " ^ Pst.string_of_pst p))
+                                in Cond (parseClauseList cl [])
      | Pst.Symbol f, _ -> raise (AbstractSyntaxError ("Unknown operator " ^ f))
 
 let expr_of_string s =

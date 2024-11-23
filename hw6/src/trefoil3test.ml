@@ -40,6 +40,12 @@ let%test "parsing_let_syntaxError" = try ignore (eos "(let (x 5) (+ x 5))"); fal
 let%test "parsing_let_sameVarError" = try ignore (eos "(let ((x 5) (x 4)) (+ x 5))"); false 
                                       with AbstractSyntaxError _ -> true
 
+(* paring cond tests *)
+let%test "parsing_cond0" = Ast.Cond [] = eos "(cond)"
+let%test "parsing_cond1" = Ast.Cond [(Bool false, Int 4); (Int 5, Add (Int 4, Int 5))] = eos "(cond (false 4) (5 (+ 4 5)))"
+let%test "parsing_cond_error" = try ignore (eos "(cond true)"); false 
+                                with AbstractSyntaxError _ -> true
+
 (* Iterpret Tests *)
 
 (* interpret let tests *)
@@ -48,6 +54,17 @@ let%test "interpret_let1" = Ast.Int 13 = ie0 (eos "(let () (+ 10 3))")
 let%test "interpret_let2" = Ast.Int 6 = ie0 (eos "(let ((x 4)) (- 10 x))")
 
 let%test "interpret_let3" = Ast.Int 20 = ie0 (eos "(let ((x 5) (y 15)) (+ y x))")
+
+(* interpret cond tests *)
+let%test "interpret_cond_error0" = try ignore (ie0 (eos "(cond)")); false
+                                   with RuntimeError _ -> true
+
+let%test "interpret_cond_error1" = try ignore (ie0 (eos "(cond (false 2) (false true))")); false
+                                   with RuntimeError _ -> true
+
+let%test "interpret_cond0" = Ast.Int 20 = ie0 (eos "(cond (true (+ 10 10)))")
+
+let%test "interpret_cond1" = Ast.Bool true = ie0 (eos "(cond (false 1) (false false) (1 true) (false 5))")
 
 (* Provided Tests *)
 

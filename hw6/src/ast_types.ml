@@ -15,7 +15,7 @@ type expr =
   | Car of expr
   | Cdr of expr
   (*| Call of string * expr list*)
-  (*| Cond of (expr * expr) list*)
+  | Cond of (expr * expr) list
 [@@deriving show]
 let string_of_expr = show_expr
 
