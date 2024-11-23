@@ -42,9 +42,30 @@ let%test "parsing_let_sameVarError" = try ignore (eos "(let ((x 5) (x 4)) (+ x 5
 
 (* paring cond tests *)
 let%test "parsing_cond0" = Ast.Cond [] = eos "(cond)"
+
 let%test "parsing_cond1" = Ast.Cond [(Bool false, Int 4); (Int 5, Add (Int 4, Int 5))] = eos "(cond (false 4) (5 (+ 4 5)))"
+
 let%test "parsing_cond_error" = try ignore (eos "(cond true)"); false 
                                 with AbstractSyntaxError _ -> true
+
+(* parsing function binding tests *)
+let%test "parsing_functionBinding0" = Ast.FunctionBinding {name = "myFunction"; param_names = ["x"]; body = Ast.Var "x"} 
+                                                            = bos "(define (myFunction x) x)"
+
+let%test "parsing_functionBinding1" = Ast.FunctionBinding {name = "myF"; param_names = ["x"; "y"; "z"]; body = Ast.Add (Ast.Add (Ast.Var "x", Ast.Var "y"), Ast.Var "z")} 
+                                                            = bos "(define (myF x y z) (+ (+ x y) z))"
+
+let%test "parsing_functionBinding_error_noName" = try ignore (bos "(define () x)"); false 
+                                                  with AbstractSyntaxError _ -> true
+
+let%test "parsing_functionBinding_error_notSymbol" = try ignore (bos "(define (x (+ 1 2)) x)"); false 
+                                                     with AbstractSyntaxError _ -> true
+
+let%test "parsing_functionBinding_error_repeatingSymbols0" = try ignore (bos "(define (x x) (+ 1 2))"); false 
+                                                    with AbstractSyntaxError _ -> true
+
+let%test "parsing_functionBinding_error_repeatingSymbols1" = try ignore (bos "(define (myFunc x y z t y) (+ 1 2))"); false 
+                                                  with AbstractSyntaxError _ -> true
 
 (* Iterpret Tests *)
 
