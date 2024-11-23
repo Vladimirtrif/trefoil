@@ -77,6 +77,7 @@ let%test "interpret_let2" = Ast.Int 6 = ie0 (eos "(let ((x 4)) (- 10 x))")
 let%test "interpret_let3" = Ast.Int 20 = ie0 (eos "(let ((x 5) (y 15)) (+ y x))")
 
 (* interpret cond tests *)
+(* have old ones from hw5 below as well*)
 let%test "interpret_cond_error0" = try ignore (ie0 (eos "(cond)")); false
                                    with RuntimeError _ -> true
 
@@ -86,6 +87,13 @@ let%test "interpret_cond_error1" = try ignore (ie0 (eos "(cond (false 2) (false 
 let%test "interpret_cond0" = Ast.Int 20 = ie0 (eos "(cond (true (+ 10 10)))")
 
 let%test "interpret_cond1" = Ast.Bool true = ie0 (eos "(cond (false 1) (false false) (1 true) (false 5))")
+
+(* interpret function binding tests *)
+let%test "interpret_functionBinding0" = [("myF", FunctionEntry ({name = "myF"; param_names = ["x"]; body = Ast.Add (Ast.Var "x", Ast.Int 1)}, []))] 
+                                          = ib [] (bos "(define (myF x) (+ x 1))")
+
+let%test "interpret_functionBinding1" = [("F", FunctionEntry ({name = "F"; param_names = ["x"; "y"]; body = Ast.Int 1}, [("x", VariableEntry (Int 4))])); ("x", VariableEntry (Int 4))] 
+                                        = ib [("x", VariableEntry (Int 4))] (bos "(define (F x y) 1)")
 
 (* Provided Tests *)
 

@@ -92,10 +92,12 @@ let interpret_binding dynenv b =
      print_endline (string_of_expr v);
      dynenv
   | TestBinding e -> begin 
-    match interpret_expression dynenv e with
-    | Bool true -> dynenv
-    | v -> raise (RuntimeError ("Test doesn't pass, " ^ string_of_expr e ^ " evaluates to " ^ string_of_expr v ^ " not true."))
-  end
+      match interpret_expression dynenv e with
+      | Bool true -> dynenv
+      | v -> raise (RuntimeError ("Test doesn't pass, " ^ string_of_expr e ^ " evaluates to " ^ string_of_expr v ^ " not true."))
+    end
+  | FunctionBinding r -> (r.name, FunctionEntry (r, dynenv)) :: dynenv
+  
 
 (* the semantics of a whole program (sequence of bindings) *)
 let interpret_bindings dynenv bs =
