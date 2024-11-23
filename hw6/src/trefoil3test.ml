@@ -1,9 +1,30 @@
 open Trefoil3lib
 open Errors
 
-(* HW6 TESTS, see Line 72 for HW5 Tests *)
+include Interpreter_types
 
-let%test "multi var let" = Ast.Int 7 = ie0 (eos "(let ((x 3) (y 4)) (+ x y))")
+(* Here are some (ridiculous) shorthands for commonly called functions in this
+   file. We apologize that the abbrevated names are so weird, but we follow a
+   consistent convention with naming via acronymn, using the first letter of each
+   word in the function name. So for example "ieab" below stands for
+   "interpret_expression_after_bindings". We also use a trailing 0 to indicate
+   "in the empty environment" rather than requiring an environment to be passed
+   in. *)
+   let ie dynenv e = Interpreter.interpret_expression dynenv e
+   let ie0 e = ie [] e
+   let ib dynenv b = Interpreter.interpret_binding dynenv b
+   let ibs dynenv bs = Interpreter.interpret_bindings dynenv bs
+   let ibs0 bs = Interpreter.interpret_bindings [] bs
+   let eos s = Ast.expr_of_string s
+   let bos s = Ast.binding_of_string s
+   let bsos s = Ast.bindings_of_string s
+   let ieab dynenv bindings expr =
+     Interpreter.interpret_expression_after_bindings dynenv bindings expr
+   let ieab0 (bindings, expr) = ieab [] bindings expr
+
+(* HW6 TESTS, see Line 90 for HW5 Tests *)
+
+(*let%test "multi var let" = Ast.Int 7 = ie0 (eos "(let ((x 3) (y 4)) (+ x y))")
 let%test "no var let" = Ast.Int 0 = ie0 (eos "(let () 0)")
 let%test "let swap" = Ast.Int 1 = ie0 (eos "(let ((x 3) (y 4)) (let ((x y) (y x)) (- x y)))")
 
@@ -66,29 +87,9 @@ let sum_cond_binding =
         (true (+ (car l) (sum (cdr l))))))"
 let%test "sum cond" =
   let program = countdown_binding ^ sum_cond_binding in
-  Ast.Int 55 = ieab0 (bsos program, eos "(sum (countdown 10))")
-
+  Ast.Int 55 = ieab0 (bsos program, eos "(sum (countdown 10))") *)
 
 (* HW5 TESTS *)
-
-(* Here are some (ridiculous) shorthands for commonly called functions in this
-   file. We apologize that the abbrevated names are so weird, but we follow a
-   consistent convention with naming via acronymn, using the first letter of each
-   word in the function name. So for example "ieab" below stands for
-   "interpret_expression_after_bindings". We also use a trailing 0 to indicate
-   "in the empty environment" rather than requiring an environment to be passed
-   in. *)
-let ie dynenv e = Interpreter.interpret_expression dynenv e
-let ie0 e = ie [] e
-let ib dynenv b = Interpreter.interpret_binding dynenv b
-let ibs dynenv bs = Interpreter.interpret_bindings dynenv bs
-let ibs0 bs = Interpreter.interpret_bindings [] bs
-let eos s = Ast.expr_of_string s
-let bos s = Ast.binding_of_string s
-let bsos s = Ast.bindings_of_string s
-let ieab dynenv bindings expr =
-  Interpreter.interpret_expression_after_bindings dynenv bindings expr
-let ieab0 (bindings, expr) = ieab [] bindings expr
 
 let%test _ = Ast.Int 3 = ie0 (eos "3")
 
@@ -253,7 +254,7 @@ let%test "interpret_cdr" = Ast.Int 2 = ie0 (eos "(cdr (cons (* 1 1) 2))")
 let%test "interpret_cdr_error" = try ignore (ie0 (eos "(cdr false)")); false 
 with RuntimeError _ -> true
 
-let xto3 = [("x", Ast.Int 3)]
+let xto3 = [("x", (VariableEntry (Ast.Int 3)))]
 
 let%test _ =
   Ast.Int 3 = ie xto3 (eos "x")

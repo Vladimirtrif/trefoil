@@ -3,9 +3,7 @@ open Errors
 
 include Interpreter_types
 
-let string_of_dynenv_entry (x, e) = match e with
-                                    | VariableEntry v -> x ^ " -> " ^ string_of_expr v
-                                    | FunctionEntry ({name = n; param_names = pl; body = b}, denv) -> x ^ " -> " ^ " function " (* TO DO: FINISH LOGIC FOR FUNC print *)
+let string_of_dynenv_entry (x, e) = x ^ " -> " ^ string_of_entry e
 
 let rec lookup dynenv name =
   match dynenv with
@@ -77,7 +75,7 @@ let interpret_binding dynenv b =
   | VarBinding (x, e) ->
      let value = interpret_expression dynenv e in
      Printf.printf "%s = %s\n%!" x (string_of_expr value);
-     (x, value) :: dynenv
+     (x, VariableEntry value) :: dynenv
   | TopLevelExpr e ->
      let v = interpret_expression dynenv e in
      print_endline (string_of_expr v);

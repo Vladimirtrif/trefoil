@@ -7,15 +7,16 @@ type expr =
   | Mul of expr * expr
   | Eq of expr * expr
   | If of expr * expr * expr
-  | Let of (string * expr) list * expr
+  (*| Let of (string * expr) list * expr*)
+  | Let of string * expr * expr
   | Nil
   | Cons of expr * expr
   | IsNil of expr
   | IsCons of expr
   | Car of expr
   | Cdr of expr
-  | Call of string * expr list
-  | Cond of (expr * expr) list
+  (*| Call of string * expr list*)
+  (*| Cond of (expr * expr) list*)
 [@@deriving show]
 let string_of_expr = show_expr
 
