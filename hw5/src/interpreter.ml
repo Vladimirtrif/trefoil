@@ -43,8 +43,8 @@ let rec interpret_expression dynenv e =
   | Eq (e1, e2) -> begin
       match interpret_expression dynenv e1, interpret_expression dynenv e2 with
       | Int n1, Int n2 -> Bool (n1 = n2)
-      | Int _, v2 -> raise (RuntimeError ("Mul applied to non-integer " ^ string_of_expr v2))
-      | v1, _ -> raise (RuntimeError ("Mul applied to non-integer " ^ string_of_expr v1))
+      | Int _, v2 -> raise (RuntimeError ("Eq applied to non-integer " ^ string_of_expr v2))
+      | v1, _ -> raise (RuntimeError ("Eq applied to non-integer " ^ string_of_expr v1))
     end
   | Cons (e1, e2) -> let v1, v2 = interpret_expression dynenv e1, interpret_expression dynenv e2 in Cons(v1, v2)
   | If (branch, thn, els) -> if interpret_expression dynenv branch = Bool false
