@@ -67,6 +67,14 @@ let%test "parsing_functionBinding_error_repeatingSymbols0" = try ignore (bos "(d
 let%test "parsing_functionBinding_error_repeatingSymbols1" = try ignore (bos "(define (myFunc x y z t y) (+ 1 2))"); false 
                                                   with AbstractSyntaxError _ -> true
 
+(* parsing function call tests *)
+let%test "parsing_call0" = Ast.Call ("f", [])= eos "(f)"
+
+let%test "parsing_call1" = Ast.Call ("func", [Ast.Int 1])= eos "(func 1)"
+
+let%test "parsing_call2" = Ast.Call ("myFunc", [Ast.Add(Ast.Int 1, Ast.Int 3); Ast.Int 2; Ast.Bool false]) = eos "(myFunc (+ 1 3) 2 false)"
+
+                                                  
 (* Iterpret Tests *)
 
 (* interpret let tests *)
@@ -94,6 +102,8 @@ let%test "interpret_functionBinding0" = [("myF", FunctionEntry ({name = "myF"; p
 
 let%test "interpret_functionBinding1" = [("F", FunctionEntry ({name = "F"; param_names = ["x"; "y"]; body = Ast.Int 1}, [("x", VariableEntry (Int 4))])); ("x", VariableEntry (Int 4))] 
                                         = ib [("x", VariableEntry (Int 4))] (bos "(define (F x y) 1)")
+
+(* interpret function call tests *)
 
 (* Provided Tests *)
 
