@@ -108,7 +108,7 @@ let interpret_binding dynenv b =
       | Bool true -> dynenv
       | v -> raise (RuntimeError ("Test doesn't pass, " ^ string_of_expr e ^ " evaluates to " ^ string_of_expr v ^ " not true."))
     end
-  | FunctionBinding r -> (r.name, FunctionEntry (r, dynenv)) :: dynenv
+  | FunctionBinding r -> print_endline ("Function " ^ r.name ^ " is defined"); (r.name, FunctionEntry (r, dynenv)) :: dynenv
   
 
 (* the semantics of a whole program (sequence of bindings) *)
