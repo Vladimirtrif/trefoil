@@ -34,8 +34,11 @@ let%test "parsing_let1" = Ast.Let ([("tst", Bool false)], Var "tst") = eos "(let
 (* Note reversed order. Don't reverse list because it is not necessary so not doing it is more performant *)
 let%test "parsing_let2" = Ast.Let ([("y", Int 4); ("x", Int 5)], Add (Var "x", Var "y")) = eos "(let ((x 5) (y 4)) (+ x y))"
 
-let%test "parsing_let_syntaxError" = try ignore (eos "(let (x 5) (+ x 5))"); false 
+let%test "parsing_let_syntaxError0" = try ignore (eos "(let (x 5) (+ x 5))"); false 
                                       with AbstractSyntaxError _ -> true
+
+let%test "parsing_let_syntaxError1" = try ignore (eos "(let (((+ 2 3) 5)) (+ 5 5))"); false 
+                                    with AbstractSyntaxError _ -> true
 
 let%test "parsing_let_sameVarError" = try ignore (eos "(let ((x 5) (x 4)) (+ x 5))"); false 
                                       with AbstractSyntaxError _ -> true

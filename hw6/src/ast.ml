@@ -80,7 +80,7 @@ let binding_of_pst p =
   | Pst.Node (head :: args) ->
      match head, args with
      | Pst.Symbol "define", [Pst.Symbol lhs_var; rhs] -> VarBinding (lhs_var, expr_of_pst rhs)
-     | Pst.Symbol "define", [Pst.Node []; body] -> raise (AbstractSyntaxError ("Function must have a name in function definition "
+     | Pst.Symbol "define", [Pst.Node []; _] -> raise (AbstractSyntaxError ("Function must have a name in function definition "
                                                                                 ^ Pst.string_of_pst p))
      | Pst.Symbol "define", [Pst.Node (Pst.Symbol nm :: []); body] -> FunctionBinding {name = nm; param_names = []; body = expr_of_pst body}
      | Pst.Symbol "define", [Pst.Node (Pst.Symbol nm :: params); body] -> begin 
