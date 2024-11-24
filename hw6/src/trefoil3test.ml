@@ -104,6 +104,26 @@ let%test "interpret_functionBinding1" = [("F", FunctionEntry ({name = "F"; param
                                         = ib [("x", VariableEntry (Int 4))] (bos "(define (F x y) 1)")
 
 (* interpret function call tests *)
+let incr = "(define (incr x) (+ x 1))"
+
+let volume = "(define (volume x y z) (* x (* y z)))"
+
+let%test "interpret_call0" = Ast.Int 7 = ieab0 (bsos incr, eos "(incr (+ 2 4))")
+
+let%test "interpret_call1" = Ast.Int 6 = ieab0 (bsos volume, eos "(volume 1 2 3)")
+
+let%test "interpret_call_unboundError" = try ignore (ieab0 ([], eos "(pow 2 3)")); false
+                                         with RuntimeError _ -> true
+
+let%test "interpret_call_varBindingError" = try ignore (ieab0 ([(Ast.VarBinding ("pow", Int 2))], eos "(pow 2 3)")); false
+                                             with RuntimeError _ -> true
+
+let%test "interpret_call_incorectArgsError0" = try ignore (ieab0 (bsos incr, eos "(incr)")); false
+                                               with RuntimeError _ -> true
+
+let%test "interpret_call_incorectArgsError1" = try ignore(ieab0 (bsos incr, eos "(incr 1 2)")); false
+                                               with RuntimeError _ -> true
+
 
 (* Provided Tests *)
 

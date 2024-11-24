@@ -61,11 +61,11 @@ let rec expr_of_pst p =
           | _ -> raise (AbstractSyntaxError ("operator cond expects arguements of the form (e1 e2) but got " ^ Pst.string_of_pst p))
         in Cond (parseClauseList cl [])
        end
-     | Pst.Symbol f, params -> let rec processParams l acc = 
+     | Pst.Symbol f, args -> let rec processArgs l acc = 
                                   match l with
                                   | []       -> List.rev acc
-                                  | hd :: tl -> processParams tl (expr_of_pst hd :: acc)
-                               in Call (f, processParams params [])
+                                  | hd :: tl -> processArgs tl (expr_of_pst hd :: acc)
+                               in Call (f, processArgs args [])
 
 let expr_of_string s =
   s
