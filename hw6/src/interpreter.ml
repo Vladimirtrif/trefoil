@@ -80,6 +80,23 @@ let rec interpret_expression dynenv e =
                                     then condHelper tl 
                                     else interpret_expression dynenv bi
                in condHelper cl
+  | Call (f, params) -> begin
+      let rec evalParams pl acc =
+        match pl with
+        | [] -> List.rev acc
+        | hd :: tl -> evalParams tl (interpret_expression dynenv hd :: acc)
+      in
+      let rec extendEnv paramNames paramValues defEnv =
+        match paramNames, paramValues with
+        | [], [] -> defEnv
+        | 
+        | _ -> raise (RuntimeError ("Incorrect amount of function arguements in function call " ^ string_of_expr e ))
+      in
+      match lookup dynenv f with
+      | None -> raise (RuntimeError ("Unbound funcion " ^ f))
+      | Some (VariableEntry _) -> raise (RuntimeError ("Expected function binding but " ^ f ^ " is a variable binding"))
+      | Some (FunctionEntry e) ->  
+    end
 
 let interpret_binding dynenv b =
   match b with
