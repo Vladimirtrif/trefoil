@@ -43,7 +43,9 @@ let rec expr_of_pst p =
        | "true" -> Bool true
        | "false" -> Bool false
        | "nil" -> Nil
-       | _ -> Var sym
+       | _ -> if String.get sym 0 = '\''
+              then Symbol (String.sub sym 1 (String.length sym - 1))
+              else Var sym
     end
   | Pst.Node [] -> raise (AbstractSyntaxError "Expected expression but got '()'")
   | Pst.Node (head :: args) ->
@@ -90,7 +92,7 @@ let rec expr_of_pst p =
           | (Pst.Node [e1; e2]) :: tl -> parseClauseList tl ((expr_of_pst e1, expr_of_pst e2):: acc)
           | _ -> raise (AbstractSyntaxError ("operator cond expects arguements of the form (e1 e2) but got " ^ Pst.string_of_pst p))
         in Cond (parseClauseList cl [])
-       end
+       end 
      | Pst.Symbol f, args -> let rec processArgs l acc = 
                                   match l with
                                   | []       -> List.rev acc

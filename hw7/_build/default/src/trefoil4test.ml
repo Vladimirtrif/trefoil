@@ -22,6 +22,17 @@ open Errors
 
 (* HW7 TESTS, see Line for HW6 Tests and Line for HW5 Tests *)
 
+(* Parse Tests *)
+
+(* Parse Symbol Tests *)
+let%test "parse_symbol0" = Ast.Symbol "mySymbol" =  eos "'mySymbol"
+let%test "parse_symbol1" = Ast.Symbol "test-sym20" =  eos "'test-sym20"
+
+
+(* Interpret Tests *)
+let%test "interpret_symbol0" = Ast.Symbol "mySymbol" =  ie0 (eos "'mySymbol")
+let%test "interpret_symbol1" = Ast.Symbol "test-sym-21!" =  ie0 (eos "'test-sym-21!")
+
 (* provided tests *)
 let%test "struct mycons accessors" =
   let program = "(struct mycons mycar mycdr)" in
@@ -104,8 +115,6 @@ let sum_with_match_error =
 let%test _ =
   try ignore (ib [] (bos (sum_with_match_error))); false
   with AbstractSyntaxError _ -> true
-
-
 
 (* HW6 TESTS, see Line 196 for HW5 Tests *)
 
