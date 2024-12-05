@@ -1,18 +1,18 @@
 (executable
- (name trefoil3)
- (libraries trefoil3lib)
- (modules trefoil3))
+ (name trefoil4)
+ (libraries trefoil4lib)
+ (modules trefoil4))
 
 (library
- (name trefoil3lib)
- (modules errors ast pst pstparser interpreter ast_types interpreter_types)
+ (name trefoil4lib)
+ (modules errors ast pst pstparser interpreter ast_types)
  (preprocess
   (pps ppx_deriving.show)))
 
 (library
- (name trefoil3test)
- (modules trefoil3test)
- (libraries trefoil3lib)
+ (name trefoil4test)
+ (modules trefoil4test)
+ (libraries trefoil4lib)
  (inline_tests)
  (preprocess
   (pps ppx_inline_test)))
@@ -21,5 +21,4 @@
  (dev
   (flags
    (:standard -warn-error -A))))
-
 
