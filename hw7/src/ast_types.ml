@@ -29,6 +29,7 @@ type expr =
   | Call of string * expr list
   | Cond of (expr * expr) list
   | Symbol of string
+  | Print of expr
 [@@deriving show]
 
 and function_binding = { name: string; param_names: string list; body: expr }

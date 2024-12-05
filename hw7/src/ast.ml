@@ -92,7 +92,9 @@ let rec expr_of_pst p =
           | (Pst.Node [e1; e2]) :: tl -> parseClauseList tl ((expr_of_pst e1, expr_of_pst e2):: acc)
           | _ -> raise (AbstractSyntaxError ("operator cond expects arguements of the form (e1 e2) but got " ^ Pst.string_of_pst p))
         in Cond (parseClauseList cl [])
-       end 
+       end
+     | Pst.Symbol "print", [e] -> Print (expr_of_pst e)
+     | Pst.Symbol "print", _ -> raise (AbstractSyntaxError ("operator print expects 1 arg but got " ^ Pst.string_of_pst p))
      | Pst.Symbol f, args -> let rec processArgs l acc = 
                                   match l with
                                   | []       -> List.rev acc

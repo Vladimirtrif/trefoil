@@ -24,14 +24,28 @@ open Errors
 
 (* Parse Tests *)
 
-(* Parse Symbol Tests *)
+(* parse symbol tests *)
 let%test "parse_symbol0" = Ast.Symbol "mySymbol" =  eos "'mySymbol"
 let%test "parse_symbol1" = Ast.Symbol "test-sym20" =  eos "'test-sym20"
 
+(* parse print tests *)
+let%test "parse_print0" = Ast.Print (Ast.Int 1) =  eos "(print 1)"
+let%test "parse_print1" = Ast.Print (Ast.Add (Ast.Int 1, Ast.Int 1)) =  eos "(print (+ 1 1))"
+let%test "parse_print_error0" = try ignore (eos "(print)"); false
+                                with _ -> true 
+let%test "parse_print_error1" = try ignore (eos "(print 1 2)"); false
+                                with _ -> true 
+
 
 (* Interpret Tests *)
+
+(* interpret symbol tests *)
 let%test "interpret_symbol0" = Ast.Symbol "mySymbol" =  ie0 (eos "'mySymbol")
 let%test "interpret_symbol1" = Ast.Symbol "test-sym-21!" =  ie0 (eos "'test-sym-21!")
+
+(* interpret print tests - output tested manually*) 
+let%test "interpret_print0" = Ast.Nil =  ie0 (eos "(print (+ 1 2))")
+let%test "interpret_print1" = Ast.Nil =  ie0 (eos "(print (cons false nil))")
 
 (* provided tests *)
 let%test "struct mycons accessors" =

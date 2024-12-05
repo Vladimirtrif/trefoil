@@ -100,6 +100,7 @@ let rec interpret_expression dynenv e =
       | Some (VariableEntry _) -> raise (RuntimeError ("Expected function binding but " ^ f ^ " is a variable binding"))
       | Some (FunctionEntry (fb, dEnv)) ->  interpret_expression ((f, FunctionEntry (fb, dEnv)) :: (addArgsToEnv fb.param_names args dEnv)) fb.body
     end
+  | Print e -> print_endline(string_of_expr (interpret_expression dynenv e)); Nil
 
 let interpret_binding dynenv b =
   match b with
