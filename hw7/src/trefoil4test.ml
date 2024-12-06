@@ -96,6 +96,8 @@ let%test "interpret_newEq10" = try ignore (ieab0 (testEnv, (eos "(= f 1)"))); fa
                                 with _ -> true
 let%test "interpret_newEq11" = try ignore (ieab0 (testEnv, (eos "(= h 1)"))); false
                               with _ -> true
+let%test "interpret_newEq12" = try ignore (ieab0 (testEnv, (eos "(= (cons (cons false f) 2) (cons (cons false f) 2))"))); false
+                            with _ -> true
 
 (* TO DO: add tests for strtucts once implemented *)
 
