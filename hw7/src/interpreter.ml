@@ -51,10 +51,21 @@ let rec interpret_expression dynenv e =
       | v1, _ -> raise (RuntimeError ("Mul applied to non-integer " ^ string_of_expr v1))
     end
   | Eq (e1, e2) -> begin
-      match interpret_expression dynenv e1, interpret_expression dynenv e2 with
-      | Int n1, Int n2 -> Bool (n1 = n2)
-      | Int _, v2 -> raise (RuntimeError ("Eq applied to non-integer " ^ string_of_expr v2))
-      | v1, _ -> raise (RuntimeError ("Eq applied to non-integer " ^ string_of_expr v1))
+      let rec checkStructure x y = 
+        match x, y with
+        | Int a, Int b -> a = b
+        | Bool b1, Bool b2  -> b1 = b2
+        | Nil, Nil  -> true
+        | Symbol s1, Symbol s2  -> String.equal s1 s2
+        | Cons (a1, a2), Cons(b1, b2) -> checkStructure a1 b1 && checkStructure a2 b2
+        (* TO DO: ADD CASE FOR STRUCTS *)
+        | Closure _, _  -> raise (RuntimeError ("Cannot apply operator = to a closure in " ^ string_of_expr e))
+        | _, Closure _  -> raise (RuntimeError ("Cannot apply operator = to a closure in " ^ string_of_expr e))
+        | _ -> false
+      in
+      let v1 = interpret_expression dynenv e1 in
+      let v2 = interpret_expression dynenv e2 in
+      Bool (checkStructure v1 v2)
     end
   | Cons (e1, e2) -> let v1, v2 = interpret_expression dynenv e1, interpret_expression dynenv e2 in Cons(v1, v2)
   | If (branch, thn, els) -> if interpret_expression dynenv branch = Bool false

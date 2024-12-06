@@ -51,6 +51,8 @@ let%test "parse_lambda_error1" = try ignore (eos "(lambda ())"); false
 let%test "parse_lambda_error2" = try ignore (eos "(lambda (x y x) (+ x y))"); false 
                                  with _ -> true
 
+(* no new test cases needed for parsing = , have some below from hw5 *)
+
 (* Interpret Tests *)
 
 (* interpret symbol tests *)
@@ -78,6 +80,24 @@ let%test "interpret_lambda0" = Ast.Closure({rec_name = None; lambda_param_names 
                                 = ie0 (eos "(lambda () 1)")
 let%test "interpret_lambda1" = Ast.Closure ({rec_name = None; lambda_param_names = ["y"]; lambda_body = Add (Var "x", Var "y")}, [("x", Int 2)])
                                 = ie [("x", Int 2)] (eos "(lambda (y) (+ x y))")
+
+(* interpret eq tests *)
+let%test "interpret_newEq0" = Ast.Bool false = ie0(eos "(= 1 2)")
+let%test "interpret_newEq1" = Ast.Bool true = ie0(eos "(= 20 20)")
+let%test "interpret_newEq2" = Ast.Bool true = ie0(eos "(= true true)")
+let%test "interpret_newEq3" = Ast.Bool true = ie0(eos "(= false false)")
+let%test "interpret_newEq4" = Ast.Bool false = ie0(eos "(= true false)")
+let%test "interpret_newEq5" = Ast.Bool true = ie0(eos "(= nil nil)")
+let%test "interpret_newEq6" = Ast.Bool true = ie0(eos "(= 'test-1 'test-1)")
+let%test "interpret_newEq7" = Ast.Bool false = ie0(eos "(= 'idk 'idk1)")
+let%test "interpret_newEq4" = Ast.Bool true = ie0(eos "(= (cons (cons false nil) 2) (cons (cons false nil) 2))")
+let%test "interpret_newEq4" = Ast.Bool false = ie0(eos "(= (cons (cons false nil) 2) (cons (cons true nil) 2))")
+let%test "interpret_newEq6" = try ignore (ieab0 (testEnv, (eos "(= f 1)"))); false
+                                with _ -> true
+let%test "interpret_newEq6" = try ignore (ieab0 (testEnv, (eos "(= h 1)"))); false
+                              with _ -> true
+
+(* TO DO: add tests for strtucts once implemented *)
 
 (* provided tests *)
 
@@ -438,12 +458,6 @@ let%test "interpret_eq1" = Ast.Bool true = ie0 (eos "(= 21 21)")
 
 let%test "interpret_eq2" = Ast.Bool false = ie0 (eos "(= 4 5)")
 
-let%test "interpret_eq_error1" = try ignore (ie0 (eos "(= 10 false)")); false 
-                                     with RuntimeError _ -> true
-
-let%test "interpret_eq_error2" = try ignore (ie0 (eos "(= false 5)")); false 
-                                     with RuntimeError _ -> true
-
 (* interpret cons tests *)
 let%test "interpret_cons1" = Ast.Cons (Ast.Int 1, Ast.Bool false) = ie0 (eos "(cons 1 false)")
 
@@ -514,8 +528,6 @@ let%test "interpret_sub" = Ast.Int (-1) = ie0 (eos "(- 1 2)")
 let%test "interpret_mul" = Ast.Int 6 = ie0 (eos "(* 2 3)")
 let%test _ = Ast.Bool true = ie0 (eos "(= 3 (+ 1 2))")
 let%test _ = Ast.Bool false = ie0 (eos "(= 4 (+ 1 2))")
-let%test _ = try ignore (ie0 (eos "(= 4 true)")); false
-             with RuntimeError _ -> true
 let%test _ = Ast.Int 0 = ie0 (eos "(if true 0 1)")
 let%test _ = Ast.Int 1 = ie0 (eos "(if false 0 1)")
 let%test _ = Ast.Int 0 = ie0 (eos "(if true 0 x)")
