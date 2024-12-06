@@ -90,11 +90,11 @@ let%test "interpret_newEq4" = Ast.Bool false = ie0(eos "(= true false)")
 let%test "interpret_newEq5" = Ast.Bool true = ie0(eos "(= nil nil)")
 let%test "interpret_newEq6" = Ast.Bool true = ie0(eos "(= 'test-1 'test-1)")
 let%test "interpret_newEq7" = Ast.Bool false = ie0(eos "(= 'idk 'idk1)")
-let%test "interpret_newEq4" = Ast.Bool true = ie0(eos "(= (cons (cons false nil) 2) (cons (cons false nil) 2))")
-let%test "interpret_newEq4" = Ast.Bool false = ie0(eos "(= (cons (cons false nil) 2) (cons (cons true nil) 2))")
-let%test "interpret_newEq6" = try ignore (ieab0 (testEnv, (eos "(= f 1)"))); false
+let%test "interpret_newEq8" = Ast.Bool true = ie0(eos "(= (cons (cons false nil) 2) (cons (cons false nil) 2))")
+let%test "interpret_newEq9" = Ast.Bool false = ie0(eos "(= (cons (cons false nil) 2) (cons (cons true nil) 2))")
+let%test "interpret_newEq10" = try ignore (ieab0 (testEnv, (eos "(= f 1)"))); false
                                 with _ -> true
-let%test "interpret_newEq6" = try ignore (ieab0 (testEnv, (eos "(= h 1)"))); false
+let%test "interpret_newEq11" = try ignore (ieab0 (testEnv, (eos "(= h 1)"))); false
                               with _ -> true
 
 (* TO DO: add tests for strtucts once implemented *)
