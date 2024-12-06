@@ -26,11 +26,11 @@ let rec interpret_expression dynenv e =
   | Bool _ -> e
   | Nil -> e
   | Symbol _ -> e
+  | Closure _ -> e
   | Var x -> begin
       match lookup dynenv x with
-      | None -> raise (RuntimeError ("Unbound var " ^ x))
-      | Some (VariableEntry value) -> value
-      | Some (FunctionEntry _) -> raise (RuntimeError ("Expected variable binding but " ^ x ^ " is a function binding"))
+      | None -> raise (RuntimeError ("Unbound var or closure " ^ x))
+      | Some value -> value
     end
   | Add (e1, e2) -> begin
       match interpret_expression dynenv e1, interpret_expression dynenv e2 with
@@ -63,7 +63,7 @@ let rec interpret_expression dynenv e =
   | Let (dl, body) -> let rec makeNewEnv l acc =
                       match l with
                       | [] -> acc
-                      | (x, e) :: tl -> makeNewEnv tl ((x, VariableEntry (interpret_expression dynenv e)) :: acc)
+                      | (x, e) :: tl -> makeNewEnv tl ((x, (interpret_expression dynenv e)) :: acc)
                     in interpret_expression (makeNewEnv dl dynenv) body
   | IsNil e -> Bool (interpret_expression dynenv e = Nil)
   | IsCons e -> begin 
@@ -89,17 +89,23 @@ let rec interpret_expression dynenv e =
                                     else interpret_expression dynenv bi
                in condHelper cl
   | Call (f, args) -> begin
-      let rec addArgsToEnv pl al defEnv =
-        match pl, al with
-        | [], [] -> defEnv
-        | name :: nTail,  arg :: aTail -> addArgsToEnv nTail aTail ((name, VariableEntry (interpret_expression dynenv arg)) :: defEnv)
-        | _ -> raise (RuntimeError ("Incorrect amount of function arguements in function call " ^ string_of_expr e ))
-      in
-      match lookup dynenv f with
-      | None -> raise (RuntimeError ("Unbound function " ^ f))
-      | Some (VariableEntry _) -> raise (RuntimeError ("Expected function binding but " ^ f ^ " is a variable binding"))
-      | Some (FunctionEntry (fb, dEnv)) ->  interpret_expression ((f, FunctionEntry (fb, dEnv)) :: (addArgsToEnv fb.param_names args dEnv)) fb.body
-    end
+    let rec addArgsToEnv pl al defEnv =
+      (match pl, al with
+       | [], [] -> defEnv
+       | name :: nTail,  arg :: aTail -> addArgsToEnv nTail aTail ((name, (interpret_expression dynenv arg)) :: defEnv)
+       | _ -> raise (RuntimeError ("Incorrect amount of function arguements in function call " ^ string_of_expr e ))
+      )
+    in  
+    let x = interpret_expression dynenv f in
+    (match x with
+      | Closure (fa, da) ->
+                           (match fa.rec_name with
+                            | Some nm -> interpret_expression ((nm, (Closure (fa, da))) :: (addArgsToEnv fa.lambda_param_names args da)) fa.lambda_body
+                            | None -> interpret_expression (addArgsToEnv fa.lambda_param_names args da) fa.lambda_body
+                           )
+      |_ -> raise (RuntimeError ("Expression doesn't evaluate to a closure in function call " ^ string_of_expr e ))
+    )
+  end
   | Print e -> print_endline(string_of_expr (interpret_expression dynenv e)); Nil
 
 let interpret_binding dynenv b =
@@ -107,7 +113,7 @@ let interpret_binding dynenv b =
   | VarBinding (x, e) ->
      let value = interpret_expression dynenv e in
      Printf.printf "%s = %s\n%!" x (string_of_expr value);
-     (x, VariableEntry value) :: dynenv
+     (x, value) :: dynenv
   | TopLevelExpr e ->
      let v = interpret_expression dynenv e in
      print_endline (string_of_expr v);
@@ -117,7 +123,8 @@ let interpret_binding dynenv b =
       | Bool true -> dynenv
       | v -> raise (RuntimeError ("Test doesn't pass, " ^ string_of_expr e ^ " evaluates to " ^ string_of_expr v ^ " not true."))
     end
-  | FunctionBinding r -> print_endline ("Function " ^ r.name ^ " is defined"); (r.name, FunctionEntry (r, dynenv)) :: dynenv
+  | FunctionBinding r -> print_endline ("Function " ^ r.name ^ " is defined"); 
+                        (r.name, (Closure ({ rec_name = Some r.name; lambda_param_names = r.param_names; lambda_body = r.body }, dynenv))) :: dynenv
   
 
 (* the semantics of a whole program (sequence of bindings) *)

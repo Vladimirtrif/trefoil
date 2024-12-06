@@ -26,10 +26,14 @@ type expr =
   | IsCons of expr
   | Car of expr
   | Cdr of expr
-  | Call of string * expr list
+  | Call of expr * expr list
+  | Closure of func_args * dynamic_env
   | Cond of (expr * expr) list
   | Symbol of string
   | Print of expr
+[@@deriving show]
+
+and func_args = { rec_name: string option; lambda_param_names: string list; lambda_body: expr }
 [@@deriving show]
 
 and function_binding = { name: string; param_names: string list; body: expr }
@@ -42,13 +46,9 @@ and binding =
    | TestBinding of expr
 [@@deriving show]
 
-and entry =
-  | VariableEntry of expr
-  | FunctionEntry of function_binding * dynamic_env
+and dynamic_env = (string * expr) list 
 [@@deriving show]
-and dynamic_env = (string * entry) list [@@deriving show]
 
 let string_of_expr = show_expr
 let string_of_binding = show_binding
-let string_of_entry = show_entry
-let string_of_dynenv_entry (x, e) = x ^ " -> " ^ string_of_entry e
+let string_of_dynenv_entry (x, e) = x ^ " -> " ^ string_of_expr e

@@ -50,7 +50,6 @@ let rec expr_of_pst p =
   | Pst.Node [] -> raise (AbstractSyntaxError "Expected expression but got '()'")
   | Pst.Node (head :: args) ->
      match head, args with
-     | Pst.Node _, _ -> raise (AbstractSyntaxError ("Expression forms must start with a symbol, but got " ^ Pst.string_of_pst head))
      | Pst.Symbol "+", [left; right] -> Add (expr_of_pst left, expr_of_pst right)
      | Pst.Symbol "+", _ -> raise (AbstractSyntaxError ("operator + expects 2 args but got " ^ Pst.string_of_pst p))
      | Pst.Symbol "if", [branch; thn; els] -> If (expr_of_pst branch, expr_of_pst thn, expr_of_pst els)
@@ -95,11 +94,11 @@ let rec expr_of_pst p =
        end
      | Pst.Symbol "print", [e] -> Print (expr_of_pst e)
      | Pst.Symbol "print", _ -> raise (AbstractSyntaxError ("operator print expects 1 arg but got " ^ Pst.string_of_pst p))
-     | Pst.Symbol f, args -> let rec processArgs l acc = 
-                                  match l with
-                                  | []       -> List.rev acc
-                                  | hd :: tl -> processArgs tl (expr_of_pst hd :: acc)
-                               in Call (f, processArgs args [])
+     | f, args -> let rec processArgs l acc = 
+                    (match l with
+                     | []       -> List.rev acc
+                     | hd :: tl -> processArgs tl (expr_of_pst hd :: acc))
+                  in Call (expr_of_pst f, processArgs args [])
 
 let expr_of_string s =
   s

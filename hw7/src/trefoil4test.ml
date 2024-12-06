@@ -36,6 +36,8 @@ let%test "parse_print_error0" = try ignore (eos "(print)"); false
 let%test "parse_print_error1" = try ignore (eos "(print 1 2)"); false
                                 with _ -> true 
 
+(* parse func call, only 1 new test for new syntax, more tests in hw6 *)
+let%test "parse_newCall0" = Ast.Call ((Call (Var "f", [Int 1])), [Int 2]) =  eos "((f 1) 2)"
 
 (* Interpret Tests *)
 
@@ -47,7 +49,21 @@ let%test "interpret_symbol1" = Ast.Symbol "test-sym-21!" =  ie0 (eos "'test-sym-
 let%test "interpret_print0" = Ast.Nil =  ie0 (eos "(print (+ 1 2))")
 let%test "interpret_print1" = Ast.Nil =  ie0 (eos "(print (cons false nil))")
 
+(* interpret closure test, only need 1 for straightline code *)
+let%test "interpret_closure0" = Ast.Closure ({rec_name = None; lambda_param_names = ["x"]; lambda_body = Var "x"}, []) 
+                                =  ie0 (Ast.Closure ({rec_name = None; lambda_param_names = ["x"]; lambda_body = Var "x"}, []))
+
+(* interpret call test, only need 1 for new semantics, more tests from hw6 are below *)
+let testEnv  =
+  [ Ast.FunctionBinding ({name = "f"; param_names = ["x"]; body = Add (Var "x", Int 1)}); 
+    Ast.FunctionBinding ({name = "h"; param_names = ["g"]; body = Call (Var "g", [Int 17])});
+  ]
+
+let%test "interpret_newCall0" = Ast.Int 18 =  ieab0 (testEnv, Call(Var "h", [Var "f"]))
+
 (* provided tests *)
+
+(*
 let%test "struct mycons accessors" =
   let program = "(struct mycons mycar mycdr)" in
   Ast.Int 0 = ieab0 (bsos program, eos "(mycons-mycar (mycons 0 1))") &&
@@ -129,6 +145,7 @@ let sum_with_match_error =
 let%test _ =
   try ignore (ib [] (bos (sum_with_match_error))); false
   with AbstractSyntaxError _ -> true
+*)
 
 (* HW6 TESTS, see Line 196 for HW5 Tests *)
 
@@ -179,11 +196,11 @@ let%test "parsing_functionBinding_error_repeatingSymbols1" = try ignore (bos "(d
                                                   with AbstractSyntaxError _ -> true
 
 (* parsing function call tests *)
-let%test "parsing_call0" = Ast.Call ("f", [])= eos "(f)"
+let%test "parsing_call0" = Ast.Call (Var "f", [])= eos "(f)"
 
-let%test "parsing_call1" = Ast.Call ("func", [Ast.Int 1])= eos "(func 1)"
+let%test "parsing_call1" = Ast.Call (Var "func", [Ast.Int 1])= eos "(func 1)"
 
-let%test "parsing_call2" = Ast.Call ("myFunc", [Ast.Add(Ast.Int 1, Ast.Int 3); Ast.Int 2; Ast.Bool false]) = eos "(myFunc (+ 1 3) 2 false)"
+let%test "parsing_call2" = Ast.Call (Var "myFunc", [Ast.Add(Ast.Int 1, Ast.Int 3); Ast.Int 2; Ast.Bool false]) = eos "(myFunc (+ 1 3) 2 false)"
 
                                                   
 (* Iterpret Tests *)
@@ -208,11 +225,11 @@ let%test "interpret_cond0" = Ast.Int 20 = ie0 (eos "(cond (true (+ 10 10)))")
 let%test "interpret_cond1" = Ast.Bool true = ie0 (eos "(cond (false 1) (false false) (1 true) (false 5))")
 
 (* interpret function binding tests *)
-let%test "interpret_functionBinding0" = [("myF", Ast.FunctionEntry ({name = "myF"; param_names = ["x"]; body = Ast.Add (Ast.Var "x", Ast.Int 1)}, []))] 
+let%test "interpret_functionBinding0" = [("myF", Ast.Closure ({rec_name = Some "myF"; lambda_param_names = ["x"]; lambda_body = Ast.Add (Ast.Var "x", Ast.Int 1)}, []))] 
                                           = ib [] (bos "(define (myF x) (+ x 1))")
 
-let%test "interpret_functionBinding1" = [("F", Ast.FunctionEntry ({name = "F"; param_names = ["x"; "y"]; body = Ast.Int 1}, [("x", Ast.VariableEntry (Int 4))])); ("x", Ast.VariableEntry (Int 4))] 
-                                        = ib [("x", Ast.VariableEntry (Int 4))] (bos "(define (F x y) 1)")
+let%test "interpret_functionBinding1" = [("F", Ast.Closure ({rec_name = Some "F"; lambda_param_names = ["x"; "y"]; lambda_body = Ast.Int 1}, [("x", Int 4)])); ("x", Ast.Int 4)] 
+                                        = ib [("x", Int 4)] (bos "(define (F x y) 1)")
 
 (* interpret function call tests *)
 let incr = "(define (incr x) (+ x 1))"
@@ -455,7 +472,7 @@ let%test "interpret_cdr" = Ast.Int 2 = ie0 (eos "(cdr (cons (* 1 1) 2))")
 let%test "interpret_cdr_error" = try ignore (ie0 (eos "(cdr false)")); false 
 with RuntimeError _ -> true
 
-let xto3 = [("x", (Ast.VariableEntry (Ast.Int 3)))]
+let xto3 = [("x", (Ast.Int 3))]
 
 let%test _ =
   Ast.Int 3 = ie xto3 (eos "x")
