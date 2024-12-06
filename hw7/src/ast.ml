@@ -94,6 +94,17 @@ let rec expr_of_pst p =
        end
      | Pst.Symbol "print", [e] -> Print (expr_of_pst e)
      | Pst.Symbol "print", _ -> raise (AbstractSyntaxError ("operator print expects 1 arg but got " ^ Pst.string_of_pst p))
+     | Pst.Symbol "lambda", [Node params; body] -> begin 
+        let rec checkSignature l acc =
+          match l with
+          | [] -> List.rev acc
+          | (Pst.Symbol x) :: tl -> if not (List.mem x acc) 
+                                    then checkSignature tl (x :: acc)
+                                    else raise (AbstractSyntaxError ("Lambda cannot have same name for multiple params " ^ Pst.string_of_pst p))
+          | _ -> raise (AbstractSyntaxError ("Lambda parameter must be a symbol" ^ Pst.string_of_pst p))
+        in Lambda {rec_name = None; lambda_param_names = checkSignature params []; lambda_body = expr_of_pst body}
+      end
+     | Pst.Symbol "lambda", _ -> raise (AbstractSyntaxError ("operator lambda expects 2 args with first being a node but got " ^ Pst.string_of_pst p))
      | f, args -> let rec processArgs l acc = 
                     (match l with
                      | []       -> List.rev acc

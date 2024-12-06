@@ -28,6 +28,7 @@ type expr =
   | Cdr of expr
   | Call of expr * expr list
   | Closure of func_args * dynamic_env
+  | Lambda of func_args
   | Cond of (expr * expr) list
   | Symbol of string
   | Print of expr

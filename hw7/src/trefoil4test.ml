@@ -39,6 +39,18 @@ let%test "parse_print_error1" = try ignore (eos "(print 1 2)"); false
 (* parse func call, only 1 new test for new syntax, more tests in hw6 *)
 let%test "parse_newCall0" = Ast.Call ((Call (Var "f", [Int 1])), [Int 2]) =  eos "((f 1) 2)"
 
+(* parse lambda tests *)
+let%test "parse_lambda0" = Ast.Lambda {rec_name = None; lambda_param_names = []; lambda_body = Int 1}
+                           = eos "(lambda () 1)"
+let%test "parse_lambda1" = Ast.Lambda {rec_name = None; lambda_param_names = ["x"; "y"]; lambda_body = Add (Var "x", Var "y")}
+                           = eos "(lambda (x y) (+ x y))"
+let%test "parse_lambda_error0" = try ignore (eos "(lambda 1)"); false 
+                                 with _ -> true
+let%test "parse_lambda_error1" = try ignore (eos "(lambda ())"); false 
+                                 with _ -> true
+let%test "parse_lambda_error2" = try ignore (eos "(lambda (x y x) (+ x y))"); false 
+                                 with _ -> true
+
 (* Interpret Tests *)
 
 (* interpret symbol tests *)
@@ -60,6 +72,12 @@ let testEnv  =
   ]
 
 let%test "interpret_newCall0" = Ast.Int 18 =  ieab0 (testEnv, Call(Var "h", [Var "f"]))
+
+(* interpret lambda tests *)
+let%test "interpret_lambda0" = Ast.Closure({rec_name = None; lambda_param_names = []; lambda_body = Int 1}, [])
+                                = ie0 (eos "(lambda () 1)")
+let%test "interpret_lambda1" = Ast.Closure ({rec_name = None; lambda_param_names = ["y"]; lambda_body = Add (Var "x", Var "y")}, [("x", Int 2)])
+                                = ie [("x", Int 2)] (eos "(lambda (y) (+ x y))")
 
 (* provided tests *)
 

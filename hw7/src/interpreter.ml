@@ -93,7 +93,7 @@ let rec interpret_expression dynenv e =
       (match pl, al with
        | [], [] -> defEnv
        | name :: nTail,  arg :: aTail -> addArgsToEnv nTail aTail ((name, (interpret_expression dynenv arg)) :: defEnv)
-       | _ -> raise (RuntimeError ("Incorrect amount of function arguements in function call " ^ string_of_expr e ))
+       | _ -> raise (RuntimeError ("Incorrect amount of function arguments in function call " ^ string_of_expr e ))
       )
     in  
     let x = interpret_expression dynenv f in
@@ -107,6 +107,7 @@ let rec interpret_expression dynenv e =
     )
   end
   | Print e -> print_endline(string_of_expr (interpret_expression dynenv e)); Nil
+  | Lambda f -> Closure (f, dynenv)
 
 let interpret_binding dynenv b =
   match b with
