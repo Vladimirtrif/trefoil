@@ -138,6 +138,17 @@ let binding_of_pst p =
      | Pst.Symbol "define", _ -> raise (AbstractSyntaxError("This definition is malformed " ^ Pst.string_of_pst p))
      | Pst.Symbol "test", [e] -> TestBinding (expr_of_pst e)
      | Pst.Symbol "test", _  -> raise (AbstractSyntaxError("This test is malformed " ^ Pst.string_of_pst p))
+     | Pst.Symbol "struct", (Pst.Symbol name) :: fns -> begin 
+      let rec checkFieldNames l acc =
+        match l with
+        | [] -> List.rev acc
+        | (Pst.Symbol x) :: tl -> if not (List.mem x acc)
+                                  then checkFieldNames tl (x :: acc)
+                                  else raise (AbstractSyntaxError ("Struct cannot have same name for multiple fields " ^ Pst.string_of_pst p))
+        | _ -> raise (AbstractSyntaxError ("Struct field name must be a symbol" ^ Pst.string_of_pst p))
+      in StructBinding {struct_name = name; field_names = checkFieldNames fns []}
+     end
+     | Pst.Symbol "struct", _ -> raise (AbstractSyntaxError("This struct is malformed " ^ Pst.string_of_pst p))
      | Pst.Node _, _ -> raise (AbstractSyntaxError("Expected binding to start with a symbol but got " ^ Pst.string_of_pst p))
      | _ -> TopLevelExpr (expr_of_pst p)
 

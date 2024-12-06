@@ -51,14 +51,21 @@ let rec interpret_expression dynenv e =
       | v1, _ -> raise (RuntimeError ("Mul applied to non-integer " ^ string_of_expr v1))
     end
   | Eq (e1, e2) -> begin
-      let rec checkStructure x y = 
+      let rec checkStructure x y =
+        let rec checkExpLists a b = begin
+          match a,b with
+          | [], [] -> true
+          | a1 :: atl, b1 :: btl -> checkStructure a1 b1 && checkExpLists atl btl
+          | _ -> raise (InternalError "Exp lists have different lengths in checkExpLists in checkStructure in  Eq in interpreter.ml")
+        end
+        in
         match x, y with
         | Int a, Int b -> a = b
         | Bool b1, Bool b2  -> b1 = b2
         | Nil, Nil  -> true
         | Symbol s1, Symbol s2  -> String.equal s1 s2
         | Cons (a1, a2), Cons(b1, b2) -> checkStructure a1 b1 && checkStructure a2 b2
-        (* TO DO: ADD CASE FOR STRUCTS *)
+        | StructConstructor (s1, vs1), StructConstructor(s2, vs2) -> String.equal s1 s2 && (List.length vs1 = List.length vs2) && checkExpLists vs1 vs2
         | Closure _, _  -> raise (RuntimeError ("Cannot apply operator = to a closure in " ^ string_of_expr e))
         | _, Closure _  -> raise (RuntimeError ("Cannot apply operator = to a closure in " ^ string_of_expr e))
         | _ -> false
@@ -119,6 +126,34 @@ let rec interpret_expression dynenv e =
   end
   | Print e -> print_endline(string_of_expr (interpret_expression dynenv e)); Nil
   | Lambda f -> Closure (f, dynenv)
+  | StructConstructor (s, es) -> begin
+      let rec evalExpList l acc =
+        match l with
+        | [] -> List.rev acc
+        | hd :: tl -> evalExpList tl (interpret_expression dynenv hd :: acc)
+      in StructConstructor(s, evalExpList es [])
+    end
+  | StructAccess (s, i, e) -> begin
+      let rec getIth i l =
+        match i, l with
+        | 0, hd :: _ -> hd
+        | n, _ :: tl -> getIth (n - 1) tl
+        | _, [] -> raise (InternalError (Int.to_string i ^ " is out of bounds in struct access " ^ string_of_expr e))
+      in
+      match interpret_expression dynenv e with
+      | StructConstructor(s2, vl) -> if String.equal s s2 
+                                     then getIth i vl
+                                     else raise (RuntimeError ("Attempted to access field from struct " ^ s ^ " on a " ^ s2 ^ " struct. In" ^ string_of_expr e)) 
+      | _ -> raise (RuntimeError ("Expression isn't a struct in struct access " ^ string_of_expr e)) 
+    end 
+                              
+  | StructPredicate (s, e) -> begin
+      match interpret_expression dynenv e with
+      | StructConstructor(s2, _) -> Bool (String.equal s s2)
+      | _ -> Bool false
+    end 
+
+    
 
 let interpret_binding dynenv b =
   match b with
@@ -137,6 +172,25 @@ let interpret_binding dynenv b =
     end
   | FunctionBinding r -> print_endline ("Function " ^ r.name ^ " is defined"); 
                         (r.name, (Closure ({ rec_name = Some r.name; lambda_param_names = r.param_names; lambda_body = r.body }, dynenv))) :: dynenv
+  | StructBinding s -> begin 
+      let rec elFromSl sl acc = 
+        match sl with 
+        | [] -> List.rev acc 
+        | hd :: tl -> elFromSl tl (Var hd :: acc) 
+      in
+      let conEntry = (s.struct_name, (Closure ({ rec_name = Some s.struct_name; lambda_param_names = s.field_names; lambda_body = StructConstructor(s.struct_name, elFromSl s.field_names [])}, dynenv))) in
+      let predEntry = (s.struct_name ^ "?", (Closure ({ rec_name = Some (s.struct_name ^ "?"); lambda_param_names = ["x"]; lambda_body = StructPredicate(s.struct_name, Var "x")}, dynenv))) in
+      let rec addAccessors fl index de =
+        match fl with
+        | [] -> de
+        | f :: tl -> addAccessors tl (index + 1)
+               ( (s.struct_name ^ "-" ^ f, 
+                 (Closure ({ rec_name = Some (s.struct_name ^ "-" ^ f); lambda_param_names = ["x"]; lambda_body = StructAccess(s.struct_name, index, Var "x")}, dynenv))
+                 )
+               :: de) 
+      in
+      addAccessors s.field_names 0 (predEntry :: (conEntry :: dynenv))
+    end
   
 
 (* the semantics of a whole program (sequence of bindings) *)

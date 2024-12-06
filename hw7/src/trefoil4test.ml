@@ -98,12 +98,23 @@ let%test "interpret_newEq11" = try ignore (ieab0 (testEnv, (eos "(= h 1)"))); fa
                               with _ -> true
 let%test "interpret_newEq12" = try ignore (ieab0 (testEnv, (eos "(= (cons (cons false f) 2) (cons (cons false f) 2))"))); false
                             with _ -> true
+let%test "interpret_newEq13" = 
+  let program = "(struct mycons mycar mycdr)" in
+  Ast.Bool true = ieab0 (bsos program, eos "(= (mycons 0 1) (mycons 0 1))") 
 
-(* TO DO: add tests for strtucts once implemented *)
+let%test "interpret_newEq14" = 
+  let program = "(struct mycons mycar mycdr)" in
+  Ast.Bool false = ieab0 (bsos program, eos "(= (mycons 0 2) (mycons 0 1))") 
+
+let%test "interpret_newEq15" = 
+  let program = "(struct mycons mycar mycdr) (struct test test1 test2)" in
+  Ast.Bool false = ieab0 (bsos program, eos "(= (mycons 0 1) (test 0 1))") 
+
+(* TO DO: add tests for structs once implemented *)
 
 (* provided tests *)
 
-(*
+
 let%test "struct mycons accessors" =
   let program = "(struct mycons mycar mycdr)" in
   Ast.Int 0 = ieab0 (bsos program, eos "(mycons-mycar (mycons 0 1))") &&
@@ -133,7 +144,7 @@ let%test "cond struct binding sum countdown" =
 
 
 
-let%test "match expression with wildcards and cons 1" =
+(*let%test "match expression with wildcards and cons 1" =
   let program = "(define x 3)" in
   Ast.Int 42 = ieab0 (bsos program, eos "(match (+ x 14) ((cons _ _) 25) (_ 42))")
 

@@ -32,6 +32,10 @@ type expr =
   | Cond of (expr * expr) list
   | Symbol of string
   | Print of expr
+  | StructConstructor of string * expr list
+  | StructAccess of string * int * expr
+  | StructPredicate of string * expr
+
 [@@deriving show]
 
 and func_args = { rec_name: string option; lambda_param_names: string list; lambda_body: expr }
@@ -40,11 +44,15 @@ and func_args = { rec_name: string option; lambda_param_names: string list; lamb
 and function_binding = { name: string; param_names: string list; body: expr }
 [@@deriving show]
 
+and struct_binding = { struct_name: string; field_names: string list }
+[@@deriving show]
+
 and binding =
    | VarBinding of string * expr
    | TopLevelExpr of expr
    | FunctionBinding of function_binding
    | TestBinding of expr
+   | StructBinding of struct_binding
 [@@deriving show]
 
 and dynamic_env = (string * expr) list 
