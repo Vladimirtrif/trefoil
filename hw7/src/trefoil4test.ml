@@ -20,7 +20,7 @@ open Errors
      Interpreter.interpret_expression_after_bindings dynenv bindings expr
    let ieab0 (bindings, expr) = ieab [] bindings expr
 
-(* HW7 TESTS, see Line for HW6 Tests and Line for HW5 Tests *)
+(* HW7 TESTS, see Line 214 for HW6 Tests and Line 385 for HW5 Tests *)
 
 (* Parse Tests *)
 
@@ -53,7 +53,6 @@ let%test "parse_lambda_error2" = try ignore (eos "(lambda (x y x) (+ x y))"); fa
 
 (* no new test cases needed for parsing = , have some below from hw5 *)
 
-(* TO DO: Add test cases for match that check repeating variables in patterns, and more tests *)
 (* parsing match *)
 let%test "parse_match0" = Ast.Match (Var "l", [(ConsPattern (WildcardPattern, WildcardPattern), Int 1); (WildcardPattern, Int 2)]) 
                           =  eos "(match l ((cons _ _) 1) (_ 2))"
@@ -128,7 +127,6 @@ let%test "match expression with nil literal pattern" =
   Ast.Int 17 = ieab0 (bsos program, eos "(match x ((cons _ _) 25) (true 30) (nil 17) (_ 42))")
 
 (* provided tests *)
-
 
 let%test "struct mycons accessors" =
   let program = "(struct mycons mycar mycdr)" in
@@ -213,7 +211,7 @@ let%test _ =
   with AbstractSyntaxError _ -> true
 
 
-(* HW6 TESTS, see Line 196 for HW5 Tests *)
+(* HW6 TESTS, see Line 385 for HW5 Tests *)
 
 (* Parsing Tests*)
 

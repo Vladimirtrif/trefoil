@@ -132,7 +132,7 @@ let rec expr_of_pst p =
           | [] -> List.rev acc (* reverse since clause order matters *)
           | (Pst.Node [ptrn; e]) :: tl -> let ptrn = pattern_of_pst ptrn in
                                         if checkNoRepeats (vars_of_pattern ptrn) [] then parseClauseList tl ((ptrn, expr_of_pst e):: acc)
-                                        else raise (AbstractSyntaxError ("operator match expects at least 1 arg but got " ^ Pst.string_of_pst p))
+                                        else raise (AbstractSyntaxError ("Pattern cannot have repeat variable names. In " ^ Pst.string_of_pst p))
           | _ -> raise (AbstractSyntaxError ("operator match expects arguments of the form (p e) with p being a pattern and e an expression but got " ^ Pst.string_of_pst p))
         in
         Match (expr_of_pst scr, parseClauseList cl [])

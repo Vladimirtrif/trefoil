@@ -132,16 +132,15 @@ let rec interpret_expression dynenv e =
       )
     in  
     let x = interpret_expression dynenv f in
-    (match x with
+    match x with
       | Closure (fa, da) ->
                            (match fa.rec_name with
                             | Some nm -> interpret_expression ((nm, (Closure (fa, da))) :: (addArgsToEnv fa.lambda_param_names args da)) fa.lambda_body
                             | None -> interpret_expression (addArgsToEnv fa.lambda_param_names args da) fa.lambda_body
                            )
       |_ -> raise (RuntimeError ("Expression doesn't evaluate to a closure in function call " ^ string_of_expr e ))
-    )
   end
-  | Print e -> print_endline(string_of_expr (interpret_expression dynenv e)); Nil
+  | Print e -> print_endline("Print: " ^ string_of_expr (interpret_expression dynenv e)); Nil
   | Lambda f -> Closure (f, dynenv)
   | StructConstructor (s, es) -> begin
       let rec evalExpList l acc =
@@ -181,7 +180,6 @@ let rec interpret_expression dynenv e =
       in matchhelper (interpret_expression dynenv e) cl
     end 
 
-    
 
 let interpret_binding dynenv b =
   match b with
@@ -201,13 +199,12 @@ let interpret_binding dynenv b =
   | FunctionBinding r -> print_endline ("Function " ^ r.func_name ^ " is defined"); 
                         (r.func_name, (Closure ({ rec_name = Some r.func_name; lambda_param_names = r.param_names; lambda_body = r.body }, dynenv))) :: dynenv
   | StructBinding s -> begin 
-      let rec elFromSl sl acc = 
-        match sl with 
-        | [] -> List.rev acc 
-        | hd :: tl -> elFromSl tl (Var hd :: acc) 
+      let conEntry = (s.struct_name, (Closure ({ rec_name = Some s.struct_name; lambda_param_names = s.field_names; 
+                      lambda_body = StructConstructor(s.struct_name, List.map (fun x -> Var x)  s.field_names)}, dynenv)))
       in
-      let conEntry = (s.struct_name, (Closure ({ rec_name = Some s.struct_name; lambda_param_names = s.field_names; lambda_body = StructConstructor(s.struct_name, elFromSl s.field_names [])}, dynenv))) in
-      let predEntry = (s.struct_name ^ "?", (Closure ({ rec_name = Some (s.struct_name ^ "?"); lambda_param_names = ["x"]; lambda_body = StructPredicate(s.struct_name, Var "x")}, dynenv))) in
+      let predEntry = (s.struct_name ^ "?", (Closure ({ rec_name = Some (s.struct_name ^ "?"); lambda_param_names = ["x"]; 
+                        lambda_body = StructPredicate(s.struct_name, Var "x")}, dynenv)))
+      in
       let rec addAccessors fl index de =
         match fl with
         | [] -> de
@@ -219,7 +216,6 @@ let interpret_binding dynenv b =
       in
       addAccessors s.field_names 0 (predEntry :: (conEntry :: dynenv))
     end
-  
 
 (* the semantics of a whole program (sequence of bindings) *)
 let interpret_bindings dynenv bs =
