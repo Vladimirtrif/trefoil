@@ -53,6 +53,17 @@ let%test "parse_lambda_error2" = try ignore (eos "(lambda (x y x) (+ x y))"); fa
 
 (* no new test cases needed for parsing = , have some below from hw5 *)
 
+(* TO DO: Add test cases for match that check repeating variables in patterns, and more tests *)
+(* parsing match *)
+let%test "parse_match0" = Ast.Match (Var "l", [(ConsPattern (WildcardPattern, WildcardPattern), Int 1); (WildcardPattern, Int 2)]) 
+                          =  eos "(match l ((cons _ _) 1) (_ 2))"
+
+let%test "parse_match_error0" =  try ignore (eos "(match l (() 1) (_ 2))"); false
+                                  with AbstractSyntaxError _ -> true
+
+let%test "parse_match_error1" =  try ignore (eos "(match )"); false
+                                  with AbstractSyntaxError _ -> true
+
 (* Interpret Tests *)
 
 (* interpret symbol tests *)
@@ -69,8 +80,8 @@ let%test "interpret_closure0" = Ast.Closure ({rec_name = None; lambda_param_name
 
 (* interpret call test, only need 1 for new semantics, more tests from hw6 are below *)
 let testEnv  =
-  [ Ast.FunctionBinding ({name = "f"; param_names = ["x"]; body = Add (Var "x", Int 1)}); 
-    Ast.FunctionBinding ({name = "h"; param_names = ["g"]; body = Call (Var "g", [Int 17])});
+  [ Ast.FunctionBinding ({func_name = "f"; param_names = ["x"]; body = Add (Var "x", Int 1)}); 
+    Ast.FunctionBinding ({func_name = "h"; param_names = ["g"]; body = Call (Var "g", [Int 17])});
   ]
 
 let%test "interpret_newCall0" = Ast.Int 18 =  ieab0 (testEnv, Call(Var "h", [Var "f"]))
@@ -110,8 +121,6 @@ let%test "interpret_newEq15" =
   let program = "(struct mycons mycar mycdr) (struct test test1 test2)" in
   Ast.Bool false = ieab0 (bsos program, eos "(= (mycons 0 1) (test 0 1))") 
 
-(* TO DO: add tests for structs once implemented *)
-
 (* provided tests *)
 
 
@@ -144,7 +153,7 @@ let%test "cond struct binding sum countdown" =
 
 
 
-(*let%test "match expression with wildcards and cons 1" =
+let%test "match expression with wildcards and cons 1" =
   let program = "(define x 3)" in
   Ast.Int 42 = ieab0 (bsos program, eos "(match (+ x 14) ((cons _ _) 25) (_ 42))")
 
@@ -153,7 +162,7 @@ let%test "match expression with wildcards and cons 2" =
   Ast.Int 25 = ieab0 (bsos program, eos "(match (cons (+ x 14) (+ x 15)) ((cons _ _) 25) (_ 42))")
 
 
-let%test "match expression with int literal patterns" =
+(*let%test "match expression with int literal patterns" =
   let program = "(define x 3)" in
   Ast.Int 30 = ieab0 (bsos program, eos "(match (+ x 14) ((cons _ _) 25) (17 30) (_ 42))")
 
@@ -228,10 +237,10 @@ let%test "parsing_cond_error" = try ignore (eos "(cond true)"); false
                                 with AbstractSyntaxError _ -> true
 
 (* parsing function binding tests *)
-let%test "parsing_functionBinding0" = Ast.FunctionBinding {name = "myFunction"; param_names = ["x"]; body = Ast.Var "x"} 
+let%test "parsing_functionBinding0" = Ast.FunctionBinding {func_name = "myFunction"; param_names = ["x"]; body = Ast.Var "x"} 
                                                             = bos "(define (myFunction x) x)"
 
-let%test "parsing_functionBinding1" = Ast.FunctionBinding {name = "myF"; param_names = ["x"; "y"; "z"]; body = Ast.Add (Ast.Add (Ast.Var "x", Ast.Var "y"), Ast.Var "z")} 
+let%test "parsing_functionBinding1" = Ast.FunctionBinding {func_name = "myF"; param_names = ["x"; "y"; "z"]; body = Ast.Add (Ast.Add (Ast.Var "x", Ast.Var "y"), Ast.Var "z")} 
                                                             = bos "(define (myF x y z) (+ (+ x y) z))"
 
 let%test "parsing_functionBinding_error_noName" = try ignore (bos "(define () x)"); false 

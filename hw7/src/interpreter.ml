@@ -151,6 +151,17 @@ let rec interpret_expression dynenv e =
       match interpret_expression dynenv e with
       | StructConstructor(s2, _) -> Bool (String.equal s s2)
       | _ -> Bool false
+    end
+  | Match (e, cl) -> begin 
+      let rec matchhelper v cl =
+        match cl with
+        | [] -> raise (RuntimeError ("expression in match doesn't match any of the clauses/patterns " ^ string_of_expr e))
+        | (p, b) :: tl -> begin
+                            match interpret_pattern p v with
+                            | Some be -> interpret_expression (be @ dynenv) b 
+                            | None -> matchhelper v tl
+                          end
+      in matchhelper (interpret_expression dynenv e) cl
     end 
 
     
@@ -170,8 +181,8 @@ let interpret_binding dynenv b =
       | Bool true -> dynenv
       | v -> raise (RuntimeError ("Test doesn't pass, " ^ string_of_expr e ^ " evaluates to " ^ string_of_expr v ^ " not true."))
     end
-  | FunctionBinding r -> print_endline ("Function " ^ r.name ^ " is defined"); 
-                        (r.name, (Closure ({ rec_name = Some r.name; lambda_param_names = r.param_names; lambda_body = r.body }, dynenv))) :: dynenv
+  | FunctionBinding r -> print_endline ("Function " ^ r.func_name ^ " is defined"); 
+                        (r.func_name, (Closure ({ rec_name = Some r.func_name; lambda_param_names = r.param_names; lambda_body = r.body }, dynenv))) :: dynenv
   | StructBinding s -> begin 
       let rec elFromSl sl acc = 
         match sl with 

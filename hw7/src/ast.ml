@@ -1,6 +1,7 @@
 include Ast_types
 open Errors
 
+(* TO DO: make sure patterns cannot reuse same variables *)
 let rec pattern_of_pst p =
   match p with
   | Pst.Symbol sym -> begin
@@ -105,6 +106,15 @@ let rec expr_of_pst p =
         in Lambda {rec_name = None; lambda_param_names = checkSignature params []; lambda_body = expr_of_pst body}
       end
      | Pst.Symbol "lambda", _ -> raise (AbstractSyntaxError ("operator lambda expects 2 args with first being a node but got " ^ Pst.string_of_pst p))
+     | Pst.Symbol "match", scr :: cl -> begin 
+        let rec parseClauseList l acc =
+          match l with
+          | [] -> List.rev acc (* reverse since clause order matters *)
+          | (Pst.Node [p; e]) :: tl -> parseClauseList tl ((pattern_of_pst p, expr_of_pst e):: acc)
+          | _ -> raise (AbstractSyntaxError ("operator match expects arguments of the form (p e) with p being a pattern and e an expression but got " ^ Pst.string_of_pst p))
+        in Match (expr_of_pst scr, parseClauseList cl [])
+      end
+     | Pst.Symbol "match", _ -> raise (AbstractSyntaxError ("operator match expects at least 1 arg but got " ^ Pst.string_of_pst p))
      | f, args -> let rec processArgs l acc = 
                     (match l with
                      | []       -> List.rev acc
@@ -133,7 +143,7 @@ let binding_of_pst p =
                                     else raise (AbstractSyntaxError ("Function cannot have same name for multiple params "
                                                 ^ "or param with same name as function " ^ Pst.string_of_pst p))
           | _ -> raise (AbstractSyntaxError ("Function parameter must be a symbol" ^ Pst.string_of_pst p))
-        in FunctionBinding {name = nm; param_names = checkSignature params []; body = expr_of_pst body}
+        in FunctionBinding {func_name = nm; param_names = checkSignature params []; body = expr_of_pst body}
        end
      | Pst.Symbol "define", _ -> raise (AbstractSyntaxError("This definition is malformed " ^ Pst.string_of_pst p))
      | Pst.Symbol "test", [e] -> TestBinding (expr_of_pst e)
