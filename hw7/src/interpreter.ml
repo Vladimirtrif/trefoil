@@ -17,7 +17,24 @@ let rec interpret_pattern pattern value =
       | Some l1, Some l2 -> Some (l1 @ l2)
       | _ -> None
     end
-      (* TODO: add cases for other kinds of patterns here *)
+  | IntPattern n, Int v -> if n = v then Some [] else None
+  | BoolPattern b, Bool v -> if b = v then Some [] else None
+  | NilPattern, Nil -> Some []
+  | SymbolPattern s, Symbol v -> if String.equal s v then Some [] else None
+  | VarPattern x, _ -> Some [(x, value)]
+  | StructPattern (s, pl), StructConstructor(name, vs) -> begin
+      let rec interpretFields pl vs acc =
+        match pl, vs with
+        | [], [] -> Some (List.rev acc)
+        | p :: ptl, v :: vtl -> begin 
+                                  match interpret_pattern p v with
+                                  | Some bindings -> interpretFields ptl vtl (bindings @ acc)
+                                  | None -> None
+                                end
+        | _ -> raise (InternalError "pattern list and value list have different lengths in struct pattern case of interpret_pattern in interpreter.ml ")
+      in
+      if String.equal s name && List.length pl = List.length vs then interpretFields pl vs [] else None
+    end
   | _ -> None
     
 let rec interpret_expression dynenv e =

@@ -6,23 +6,31 @@ let rec pattern_of_pst p =
   match p with
   | Pst.Symbol sym -> begin
       match int_of_string_opt sym with
-      | Some n -> failwith "TODO: build an int pattern with n here"
+      | Some n -> IntPattern n
       | None ->
          match sym with
          | "_" -> WildcardPattern
-         | "true" -> failwith "TODO: build a bool pattern with true here"
-         (* TODO: add other cases here for "false" and "nil" *)
+         | "true" -> BoolPattern true
+         | "false" -> BoolPattern false
+         | "nil" -> NilPattern
          | _ ->
             if String.get sym 0 = '\'' (* if the string starts with an apostrophe *)
             then let sym_without_apostrophe = String.sub sym 1 (String.length sym - 1)
-                 in failwith "TODO: build a symbol pattern using sym_without_apostrophe"
-            else failwith "TODO: build a variable pattern using sym"
+                 in SymbolPattern sym_without_apostrophe
+            else VarPattern sym
     end
   | Pst.Node [] -> raise (AbstractSyntaxError "Expected pattern but got '()'")
   | Pst.Node (head :: args) ->
      match head, args with
      | Pst.Symbol "cons", [p1; p2] -> ConsPattern (pattern_of_pst p1, pattern_of_pst p2)
-     | Pst.Symbol s, ps -> failwith "TODO: build a struct pattern using patterns ps"
+     | Pst.Symbol s, ps -> begin
+        let rec pattern_of_pstList ps acc =
+          match ps with
+          | [] -> List.rev acc
+          | p :: tl -> pattern_of_pstList tl (pattern_of_pst p :: acc)
+        in
+        StructPattern (s, pattern_of_pstList ps [])
+      end
      | _ -> raise (AbstractSyntaxError ("Expected pattern, but got " ^ Pst.string_of_pst p))
 
 let pattern_of_string s =
@@ -106,13 +114,28 @@ let rec expr_of_pst p =
         in Lambda {rec_name = None; lambda_param_names = checkSignature params []; lambda_body = expr_of_pst body}
       end
      | Pst.Symbol "lambda", _ -> raise (AbstractSyntaxError ("operator lambda expects 2 args with first being a node but got " ^ Pst.string_of_pst p))
-     | Pst.Symbol "match", scr :: cl -> begin 
+     | Pst.Symbol "match", scr :: cl -> begin
+        let rec vars_of_pattern p =
+          match p with
+           | VarPattern x -> [x]
+           | ConsPattern (p1, p2) -> vars_of_pattern p1 @ vars_of_pattern p2
+           | StructPattern (_, hd :: tl) -> vars_of_pattern hd @ vars_of_pattern (StructPattern ("dummy", tl))
+           | _ -> []
+        in
+        let rec checkNoRepeats l acc = (* returns true if list doesn't have repeats*)
+          match l with
+          | [] -> true
+          | hd :: tl -> if List.mem hd acc then false else checkNoRepeats tl (hd :: acc)
+        in
         let rec parseClauseList l acc =
           match l with
           | [] -> List.rev acc (* reverse since clause order matters *)
-          | (Pst.Node [p; e]) :: tl -> parseClauseList tl ((pattern_of_pst p, expr_of_pst e):: acc)
+          | (Pst.Node [ptrn; e]) :: tl -> let ptrn = pattern_of_pst ptrn in
+                                        if checkNoRepeats (vars_of_pattern ptrn) [] then parseClauseList tl ((ptrn, expr_of_pst e):: acc)
+                                        else raise (AbstractSyntaxError ("operator match expects at least 1 arg but got " ^ Pst.string_of_pst p))
           | _ -> raise (AbstractSyntaxError ("operator match expects arguments of the form (p e) with p being a pattern and e an expression but got " ^ Pst.string_of_pst p))
-        in Match (expr_of_pst scr, parseClauseList cl [])
+        in
+        Match (expr_of_pst scr, parseClauseList cl [])
       end
      | Pst.Symbol "match", _ -> raise (AbstractSyntaxError ("operator match expects at least 1 arg but got " ^ Pst.string_of_pst p))
      | f, args -> let rec processArgs l acc = 

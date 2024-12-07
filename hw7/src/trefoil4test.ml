@@ -121,6 +121,12 @@ let%test "interpret_newEq15" =
   let program = "(struct mycons mycar mycdr) (struct test test1 test2)" in
   Ast.Bool false = ieab0 (bsos program, eos "(= (mycons 0 1) (test 0 1))") 
 
+(* pattern tests *)
+
+let%test "match expression with nil literal pattern" =
+  let program = "(define x nil)" in
+  Ast.Int 17 = ieab0 (bsos program, eos "(match x ((cons _ _) 25) (true 30) (nil 17) (_ 42))")
+
 (* provided tests *)
 
 
@@ -162,7 +168,7 @@ let%test "match expression with wildcards and cons 2" =
   Ast.Int 25 = ieab0 (bsos program, eos "(match (cons (+ x 14) (+ x 15)) ((cons _ _) 25) (_ 42))")
 
 
-(*let%test "match expression with int literal patterns" =
+let%test "match expression with int literal patterns" =
   let program = "(define x 3)" in
   Ast.Int 30 = ieab0 (bsos program, eos "(match (+ x 14) ((cons _ _) 25) (17 30) (_ 42))")
 
@@ -205,7 +211,7 @@ let sum_with_match_error =
 let%test _ =
   try ignore (ib [] (bos (sum_with_match_error))); false
   with AbstractSyntaxError _ -> true
-*)
+
 
 (* HW6 TESTS, see Line 196 for HW5 Tests *)
 
