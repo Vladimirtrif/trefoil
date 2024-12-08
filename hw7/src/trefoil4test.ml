@@ -27,6 +27,8 @@ open Errors
 (* parse symbol tests *)
 let%test "parse_symbol0" = Ast.Symbol "mySymbol" =  eos "'mySymbol"
 let%test "parse_symbol1" = Ast.Symbol "test-sym20" =  eos "'test-sym20"
+let%test "parse_symbol_error" = try ignore (eos "'"); false
+                                with AbstractSyntaxError _ -> true
 
 (* parse print tests *)
 let%test "parse_print0" = Ast.Print (Ast.Int 1) =  eos "(print 1)"

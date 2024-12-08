@@ -52,9 +52,13 @@ let rec expr_of_pst p =
        | "true" -> Bool true
        | "false" -> Bool false
        | "nil" -> Nil
-       | _ -> if String.get sym 0 = '\''
+       | _ -> match  String.get sym 0 = '\'', String.length sym = 1 with (* replaced starter code with this to catch error when symbol is just ' *)
+              | true, false -> Symbol (String.sub sym 1 (String.length sym - 1))
+              | true, true -> raise (AbstractSyntaxError ("Symbol cannot be empty in " ^ Pst.string_of_pst p))
+              | _ -> Var sym
+              (*if String.get sym 0 = '\''
               then Symbol (String.sub sym 1 (String.length sym - 1))
-              else Var sym
+              else Var sym*)
     end
   | Pst.Node [] -> raise (AbstractSyntaxError "Expected expression but got '()'")
   | Pst.Node (head :: args) ->
