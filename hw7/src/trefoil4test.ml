@@ -20,7 +20,7 @@ open Errors
      Interpreter.interpret_expression_after_bindings dynenv bindings expr
    let ieab0 (bindings, expr) = ieab [] bindings expr
 
-(* HW7 TESTS, see Line 214 for HW6 Tests and Line 385 for HW5 Tests *)
+(* HW7 TESTS, see Line 216 for HW6 Tests and Line 387 for HW5 Tests *)
 
 (* Parse Tests *)
 
@@ -213,7 +213,7 @@ let%test _ =
   with AbstractSyntaxError _ -> true
 
 
-(* HW6 TESTS, see Line 385 for HW5 Tests *)
+(* HW6 TESTS, see Line 387 for HW5 Tests *)
 
 (* Parsing Tests*)
 
