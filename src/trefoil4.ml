@@ -1,4 +1,4 @@
-open Trefoil3lib
+open Trefoil4lib
 open Errors
 
 let main () =
@@ -49,7 +49,7 @@ let main () =
     "OPTIONS"
   in
   Arg.parse [] set_arg usage;
-  print_endline "welcome to trefoil v3!";
+  print_endline "welcome to trefoil v4!";
   let source = match !arg with
     | None -> stdin
     | Some s -> open_in s
@@ -63,7 +63,7 @@ let main () =
   print_endline "final environment:";
   List.iter (fun entry -> 
       print_string "  "; 
-      print_endline (Interpreter.string_of_dynenv_entry entry)) 
+      print_endline (Ast.string_of_dynenv_entry entry)) 
     final_env
 
 let () = main ()
